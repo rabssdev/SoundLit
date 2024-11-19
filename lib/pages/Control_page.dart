@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/models/custom_slider.dart';
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -8,131 +9,102 @@ class ControlPage extends StatefulWidget {
 }
 
 class ControlPageState extends State<ControlPage> {
-  final int _visibleCount = 5; // Nombre de sliders visibles
-  int _startIndex = 0; // Index de départ pour les sliders affichés
 
-  // Liste des valeurs des sliders (10 sliders par exemple)
-  List<double> _sliderValues = List.generate(10, (index) => 0.0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gestion des Sliders')),
-      body: Row(
-        children: [
-          // Conteneur des sliders à gauche
-          Container(
-            width: 100,
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                // Liste des sliders visibles
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _visibleCount,
-                    itemBuilder: (context, index) {
-                      int sliderIndex = _startIndex + index;
-                      if (sliderIndex >= _sliderValues.length) return Container();
-                      return CustomSlider(
-                        label: 'CH${sliderIndex + 1}',
-                        value: _sliderValues[sliderIndex],
-                        onChanged: (value) {
-                          setState(() {
-                            _sliderValues[sliderIndex] = value;
-                            print('Valeur du slider CH${sliderIndex + 1} : $value');
-                          });
-                        },
-                      );
-                    },
-                  ),
-                ),
-                // Boutons de navigation
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _startIndex > 0
-                          ? () {
-                              setState(() {
-                                _startIndex -= _visibleCount;
-                                if (_startIndex < 0) _startIndex = 0;
-                              });
-                            }
-                          : null,
-                      child: const Text('Previous'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _startIndex + _visibleCount < _sliderValues.length
-                          ? () {
-                              setState(() {
-                                _startIndex += _visibleCount;
-                                if (_startIndex >= _sliderValues.length) {
-                                  _startIndex = _sliderValues.length - _visibleCount;
-                                }
-                              });
-                            }
-                          : null,
-                      child: const Text('Next'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Espace vide à droite
-          Expanded(
-            child: Center(
-              child: const Text('Contenu principal'),
-            ),
-          ),
-        ],
-      ),
+      // appBar: AppBar(title: const Text('Gestion des Sliders')),
+      body: const SliderScreen(),
     );
   }
 }
+class SliderScreen extends StatefulWidget {
+  const SliderScreen({super.key});
 
-class CustomSlider extends StatelessWidget {
-  final String label;
-  final double value;
-  final ValueChanged<double> onChanged;
+  @override
+  _SliderScreenState createState() => _SliderScreenState();
+}
 
-  const CustomSlider({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
+class _SliderScreenState extends State<SliderScreen> {
+  final int totalSliders = 22; // Nombre total de sliders
+  final int slidersPerPage = 5; // Nombre de sliders par page
+  final List<double> _sliderValues = List.generate(22, (index) => 128.0); // Valeurs initiales des sliders
+  int _currentPage = 0; // Page actuelle
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 18),
-          ),
-          SizedBox(
-            height: 200, // Hauteur du slider
-            width: 50,   // Largeur du slider
-            child: RotatedBox(
-              quarterTurns: -1, // Rotation du slider pour le rendre vertical
-              child: Slider(
-                value: value,
-                min: 0,
-                max: 255,
-                divisions: 255,
-                label: value.round().toString(),
-                activeColor: Colors.blue,
-                inactiveColor: Colors.grey,
-                onChanged: onChanged,
-              ),
+    // Calcul du nombre total de pages nécessaires
+    int totalPages = (totalSliders / slidersPerPage).ceil();
+
+    // Déterminer la plage des sliders à afficher
+    int start = _currentPage * slidersPerPage;
+    int end = (_currentPage * slidersPerPage + slidersPerPage).clamp(0, totalSliders);
+
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: Wrap(
+              direction: Axis.horizontal,
+              alignment: WrapAlignment.center,
+              spacing: 1, // Espacement horizontal minimum entre les sliders
+              runSpacing: 20, // Espacement vertical entre les lignes si nécessaire
+              children: List.generate(end - start, (index) {
+                int sliderIndex = start + index;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomSlider(
+                      label: 'Slider ${sliderIndex + 1}',
+                      value: _sliderValues[sliderIndex],
+                      onChanged: (newValue) {
+                        setState(() {
+                          _sliderValues[sliderIndex] = newValue;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8), // Espacement entre le slider et le label
+                    Text(
+                      'CH${sliderIndex + 1}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color:Colors.white70),
+                    ),
+                  ],
+                );
+              }),
             ),
           ),
-        ],
-      ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ElevatedButton(
+              onPressed: _currentPage > 0
+                  ? () {
+                      setState(() {
+                        _currentPage--;
+                      });
+                    }
+                  : null, // Désactiver si déjà sur la première page
+              child: const Text('Preview'),
+            ),
+            Text(
+              'Page ${_currentPage + 1} / $totalPages',
+              style: const TextStyle(fontSize: 16),
+            ),
+            ElevatedButton(
+              onPressed: _currentPage < totalPages - 1
+                  ? () {
+                      setState(() {
+                        _currentPage++;
+                      });
+                    }
+                  : null, // Désactiver si déjà sur la dernière page
+              child: const Text('Next'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
