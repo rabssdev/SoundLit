@@ -51,9 +51,9 @@ class _SliderScreenState extends State<SliderScreen> {
         Expanded(
           child: Row( //**********************************************ROW ROW ROW */
             children: [
-              // Bouton "Preview" à gauche
-
               
+              //AJOUT D'UN ELEMENT A DROITE
+
               Expanded(
                 child: Container(
                   color: Colors.white, // Définir l'arrière-plan blanc
