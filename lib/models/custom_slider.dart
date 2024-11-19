@@ -16,17 +16,17 @@ class CustomSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 12),
           ),
           SizedBox(
             height: 180, // Hauteur du slider
-            width: 50,   // Largeur du slider
+            width: 25,   // Largeur du slider
             child: RotatedBox(
               quarterTurns: -1, // Rotation du slider pour le rendre vertical
               child: Slider(
