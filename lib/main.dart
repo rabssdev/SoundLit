@@ -7,7 +7,7 @@ import 'pages/Wemcome_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Verrouiller l'application en mode paysage uniquement
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
@@ -58,7 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -67,12 +66,10 @@ class _MyHomePageState extends State<MyHomePage> {
               decoration: BoxDecoration(
                 color: Color(0xFF1E1C1C),
               ),
-              child: Text(
-                'Navigation',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Image.asset(
+                'assets/logo/logo.png', // Chemin vers votre logo
+                width: 100, // Ajustez la largeur selon vos besoins
+                height: 100, // Ajustez la hauteur selon vos besoins
               ),
             ),
             ListTile(
