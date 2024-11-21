@@ -3,14 +3,14 @@ class Light {
   final String name;
   final int number;
   final bool state;
-  final int channelNumber;
+  final List<int> channelList; // New variable as a list of integers
 
   Light({
     this.id,
     required this.name,
     required this.number,
     required this.state,
-    required this.channelNumber,
+    required this.channelList, // Updated constructor
   });
 
   // Convert a Light object into a Map
@@ -20,7 +20,7 @@ class Light {
       'name': name,
       'number': number,
       'state': state ? 1 : 0, // Store boolean as 0/1 in SQLite
-      'channel_number': channelNumber,
+      'channel_list': channelList.join(','), // Convert list to a comma-separated string
     };
   }
 
@@ -31,7 +31,9 @@ class Light {
       name: map['name'],
       number: map['number'],
       state: map['state'] == 1,
-      channelNumber: map['channel_number'],
+      channelList: map['channel_list'] != null 
+          ? map['channel_list'].split(',').map((e) => int.parse(e)).toList() 
+          : [], // Convert comma-separated string back to list of integers
     );
   }
 }

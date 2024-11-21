@@ -1,32 +1,31 @@
-class StateModel {
-  final int? id;
-  final String name;
-  final List<int> channelList;
+class State {
+  final int? stateId; // Clé primaire
+  final List<int> channels; // Liste de canaux
+  final bool activated; // Statut activé
+  final int delayAfter; // Délai après
 
-  StateModel({
-    this.id,
-    required this.name,
-    required this.channelList,
+  State({
+    this.stateId,
+    required this.channels,
+    required this.activated,
+    required this.delayAfter,
   });
 
-  // Convert a StateModel object into a Map
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'name': name,
-      'channel_list': channelList.join(','), // Convert list to a string
+      'state_id': stateId,
+      'channels': channels.join(','),
+      'activated': activated ? 1 : 0,
+      'delay_after': delayAfter,
     };
   }
 
-  // Convert a Map into a StateModel object
-  factory StateModel.fromMap(Map<String, dynamic> map) {
-    return StateModel(
-      id: map['id'],
-      name: map['name'],
-      channelList: map['channel_list']
-          .split(',')
-          .map((e) => int.parse(e))
-          .toList(),
+  factory State.fromMap(Map<String, dynamic> map) {
+    return State(
+      stateId: map['state_id'],
+      channels: (map['channels'] as String).split(',').map(int.parse).toList(),
+      activated: map['activated'] == 1,
+      delayAfter: map['delay_after'],
     );
   }
 }

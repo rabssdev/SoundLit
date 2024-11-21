@@ -32,111 +32,63 @@ class _AddLightPageState extends State<AddLightPage> {
   }
 
   Future<void> deleteLight(int number) async {
-  final db = await DBHelper().database;
-  await db.delete('Light', where: 'number = ?', whereArgs: [number]);
-  fetchLights(); // Recharge la liste après suppression
-}
-
+    final db = await DBHelper().database;
+    await db.delete('Light', where: 'number = ?', whereArgs: [number]);
+    fetchLights(); // Recharge la liste après suppression
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Lights')),
-      body: ListView.builder(
-        itemCount: lights.length,
-        itemBuilder: (context, index) {
-          final light = lights[index];
-          return ListTile(
-            title: Text(light.name),
-            subtitle: Text('Channel: ${light.channelNumber}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Switch(
-                  value: light.state,
-                  onChanged: (value) {
-                    setState(() {
-                      lights[index] = Light(
-                        name: light.name,
-                        number: light.number,
-                        state: value,
-                        channelNumber: light.channelNumber,
-                      );
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    await deleteLight(light.number);
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await addLight(
-            Light(
-              name: 'Light ${lights.length + 1}',
-              number: lights.length + 1,
-              state: true,
-              channelNumber: 100 + lights.length + 1,
-            ),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-    );
+    return Text("HELLO");
+    // return Scaffold(
+    //   appBar: AppBar(title: Text('Lights')),
+    //   body: ListView.builder(
+    //     itemCount: lights.length,
+    //     itemindex) {
+    //       final light = lights[index];
+    //       return ListTile(
+    //         title: Text(light.name),
+    //         subtitle: Text('Channel: ${light.channelNumber}'),
+    //         trailing: Row(
+    //           mainAxisSize: MainAxisSize.min,
+    //           children: [
+    //             Switch(
+    //               value: light.state,
+    //               onChanged: (value) {
+    //                 setState(() {
+    //                   lights[index] = Light(
+    //                     name: light.name,
+    //                     number: light.number,
+    //                     state: value,
+    //                     channelNumber: light.channelNumber,
+    //                   );
+    //                 });
+    //               },
+    //             ),
+    //             IconButton(
+    //               icon: Icon(Icons.delete, color: Colors.red),
+    //               onPressed: () async {
+    //                 await deleteLight(light.number);
+    //               },
+    //             ),
+    //           ],
+    //         ),
+    //       );
+    //     },
+    //   ),
+    //   floatingActionButton: FloatingActionButton(
+    //     onPressed: () async {
+    //       await addLight(
+    //         Light(
+    //           name: 'Light ${lights.length + 1}',
+    //           number: lights.length + 1,
+    //           state: true,
+    //           channelNumber: 100 + lights.length + 1,
+    //         ),
+    //       );
+    //     },
+    //     child: Icon(Icons.add),
+    //   ),
+    // );
   }
 }
-
-
-
-
-
-// class AddLightPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'SQLite Example',
-//       home: Scaffold(
-//         appBar: AppBar(title: Text('SQLite Example')),
-//         body: FutureBuilder(
-//           future: DBHelper().getAllLights(),
-//           builder: (context, snapshot) {
-//             if (snapshot.connectionState == ConnectionState.waiting) {
-//               return Center(child: CircularProgressIndicator());
-//             }
-
-//             final lights = snapshot.data as List<Light>;
-//             return ListView.builder(
-//               itemCount: lights.length,
-//               itemBuilder: (context, index) {
-//                 return ListTile(
-//                   title: Text(lights[index].name),
-//                   subtitle: Text('Channel: ${lights[index].channelNumber}'),
-//                 );
-//               },
-//             );
-//           },
-//         ),
-//         floatingActionButton: FloatingActionButton(
-//           onPressed: () async {
-//             await DBHelper().insertLight(
-//               Light(
-//                 name: 'Light 1',
-//                 number: 1,
-//                 state: true,
-//                 channelNumber: 101,
-//               ),
-//             );
-//           },
-//           child: Icon(Icons.add),
-//         ),
-//       ),
-//     );
-//   }
-// }
