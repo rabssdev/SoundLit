@@ -50,7 +50,8 @@ class DBHelper {
           CREATE TABLE Tools (
             tools_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            ch_used INTEGER NOT NULL
+            ch_used INTEGER NOT NULL,
+            label TEXT NULL
           )
         ''');
         await db.execute('''
@@ -203,6 +204,24 @@ class DBHelper {
       whereArgs: [id],
     );
   }
+
+  // Récupérer un outil par son ID
+Future<Tools?> getToolById(int toolId) async {
+  final db = await database;
+  final result = await db.query(
+    'Tools',
+    where: 'tools_id = ?',
+    whereArgs: [toolId],
+  );
+
+  if (result.isEmpty) {
+    // Retourner null si aucun outil n'est trouvé
+    return null;
+  }
+
+  return Tools.fromMap(result.first);
+}
+
 
   // Ajouter un modèle
   Future<int> insertModel(Model model) async {

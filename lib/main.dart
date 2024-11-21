@@ -6,9 +6,11 @@ import 'pages/Add_light_page.dart';
 import 'pages/Wemcome_page.dart';
 import 'pages/ToolsPage.dart';
 import 'pages/database_reset.dart';
-import 'pages/ModelCrudPage.dart';
+// import 'pages/ModelCrudPage.dart';
 import 'pages/Used_light_CRUD.dart';
 import 'pages/State_CRUD.dart';
+import 'pages/Add_model_page.dart';
+import 'pages/Show_models.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
     AddModelPage(),
     UsedLightPage(),
     StatuPage(),
+    ModelsScreen(),
   ];
 
   // Méthode de changement de page
@@ -114,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ListTile(
               leading: Icon(Icons.home),
-              title: Text('Model test Crud'),
+              title: Text('Add model page'),
               onTap: () => _onItemTapped(6),
             ),
             ListTile(
@@ -126,6 +129,11 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.home),
               title: Text('State Crud'),
               onTap: () => _onItemTapped(8),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Show models'),
+              onTap: () => _onItemTapped(9),
             ),
           ],
         ),

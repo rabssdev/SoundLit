@@ -13,6 +13,7 @@ class _ToolsPageState extends State<ToolsPage> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _chUsedController = TextEditingController();
+  final TextEditingController _labelController = TextEditingController();
 
   @override
   void initState() {
@@ -34,17 +35,22 @@ class _ToolsPageState extends State<ToolsPage> {
     final int chUsed = int.tryParse(_chUsedController.text) ?? 0;
 
     if (name.isNotEmpty) {
-      final newTool = Tools(name: name, chUsed: chUsed);
+      final newTool = Tools(name: name, chUsed: chUsed, label: "label");
       await _dbHelper.insertTool(newTool);
       _nameController.clear();
       _chUsedController.clear();
+      _labelController.clear();
       _fetchTools();
     }
   }
 
   // Mettre à jour un outil
   Future<void> _updateTool(Tools tool) async {
-    final updatedTool = Tools(toolsId: tool.toolsId, name: tool.name, chUsed: tool.chUsed + 1);
+    final updatedTool = Tools(
+        toolsId: tool.toolsId,
+        name: tool.name,
+        chUsed: tool.chUsed + 1,
+        label: tool.label);
     await _dbHelper.updateTool(updatedTool);
     _fetchTools();
   }
@@ -69,6 +75,10 @@ class _ToolsPageState extends State<ToolsPage> {
             TextField(
               controller: _nameController,
               decoration: InputDecoration(labelText: 'Tool Name'),
+            ),
+            TextField(
+              controller: _labelController,
+              decoration: InputDecoration(labelText: 'Tool label'),
             ),
             TextField(
               controller: _chUsedController,

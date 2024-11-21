@@ -47,7 +47,7 @@ class _AddModelPageState extends State<AddModelPage> {
     final tool = await dbHelper.getAllTools(); // Récupérer tous les outils
     final matchingTool = tool.firstWhere(
       (t) => t.toolsId == toolId,
-      orElse: () => Tools(name: "Unknown", chUsed: 0),
+      orElse: () => Tools(name: "Unknown", chUsed: 0,label: "label"),
     );
     return matchingTool.name;
   }

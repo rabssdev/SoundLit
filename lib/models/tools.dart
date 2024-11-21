@@ -2,8 +2,9 @@ class Tools {
   final int? toolsId; // nullable pour gérer les IDs auto-incrémentés
   final String name;
   final int chUsed;
+  final String label;
 
-  Tools({this.toolsId, required this.name, required this.chUsed});
+  Tools({this.toolsId, required this.name, required this.chUsed, required this.label});
 
   // Convertir un objet Tools en map (pour SQLite)
   Map<String, dynamic> toMap() {
@@ -11,6 +12,7 @@ class Tools {
       'tools_id': toolsId,
       'name': name,
       'ch_used': chUsed,
+      'label' : label,
     };
   }
 
@@ -20,6 +22,7 @@ class Tools {
       toolsId: map['tools_id'],
       name: map['name'],
       chUsed: map['ch_used'],
+      label: map['label']
     );
   }
 }
