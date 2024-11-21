@@ -7,6 +7,8 @@ import 'pages/Wemcome_page.dart';
 import 'pages/ToolsPage.dart';
 import 'pages/database_reset.dart';
 import 'pages/ModelCrudPage.dart';
+import 'pages/Used_light_CRUD.dart';
+import 'pages/State_CRUD.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +52,9 @@ class _MyHomePageState extends State<MyHomePage> {
     AddLightPage(),
     ToolsPage(),
     DatabaseResetPage(),
-    ModelCrudPage(),
+    AddModelPage(),
+    UsedLightPage(),
+    StatuPage(),
   ];
 
   // Méthode de changement de page
@@ -103,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text('Tools'),
               onTap: () => _onItemTapped(4),
             ),
-            
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Delete database'),
@@ -113,6 +116,16 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.home),
               title: Text('Model test Crud'),
               onTap: () => _onItemTapped(6),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Used light Crud'),
+              onTap: () => _onItemTapped(7),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('State Crud'),
+              onTap: () => _onItemTapped(8),
             ),
           ],
         ),

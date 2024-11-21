@@ -1,7 +1,7 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/light.dart';
-import '../models/state.dart';
+import '../models/statu.dart';
 import '../models/tools.dart';
 import '../models/model.dart';
 import '../models/used_light.dart';
@@ -32,14 +32,14 @@ class DBHelper {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             number INTEGER NOT NULL,
-            state INTEGER NOT NULL,
+            statu INTEGER NOT NULL,
             channel_list TEXT NOT NULL
           )
         ''');
 
         await db.execute('''
-          CREATE TABLE State (
-            state_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          CREATE TABLE Statu (
+            statu_id INTEGER PRIMARY KEY AUTOINCREMENT,
             channels TEXT NOT NULL,
             activated INTEGER NOT NULL,
             delay_after INTEGER NOT NULL
@@ -134,34 +134,34 @@ class DBHelper {
     );
   }
 
-//*********************************************************************CRUD STATE */
-  Future<int> insertState(State state) async {
+//*********************************************************************CRUD STATU */
+  Future<int> insertStatu(Statu statu) async {
     final db = await database;
-    return await db.insert('State', state.toMap());
+    return await db.insert('Statu', statu.toMap());
   }
 
-  Future<List<State>> getAllStates() async {
+  Future<List<Statu>> getAllStatus() async {
     final db = await database;
-    final maps = await db.query('State');
-    return maps.map((map) => State.fromMap(map)).toList();
+    final maps = await db.query('Statu');
+    return maps.map((map) => Statu.fromMap(map)).toList();
   }
 
-  Future<int> updateState(State state) async {
+  Future<int> updateStatu(Statu statu) async {
     final db = await database;
     return await db.update(
-      'State',
-      state.toMap(),
-      where: 'state_id = ?',
-      whereArgs: [state.stateId],
+      'Statu',
+      statu.toMap(),
+      where: 'statu_id = ?',
+      whereArgs: [statu.statuId],
     );
   }
 
-  Future<int> deleteState(int stateId) async {
+  Future<int> deleteStatu(int statuId) async {
     final db = await database;
     return await db.delete(
-      'State',
-      where: 'state_id = ?',
-      whereArgs: [stateId],
+      'Statu',
+      where: 'statu_id = ?',
+      whereArgs: [statuId],
     );
   }
 

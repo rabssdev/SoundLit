@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Model {
   final int? modelId; // Clé primaire
   final String ref; // Référence du modèle
@@ -13,34 +15,32 @@ class Model {
 
   // Conversion d'un objet `Model` en map pour SQLite
   Map<String, dynamic> toMap() {
-    return {
-      'model_id': modelId,
-      'ref': ref,
-      'ch_number': chNumber,
-      'ch_tool': chTool.map((e) => '${e['channels']}:${e['tool_id']}').join(','), // Sérialisation
-    };
-  }
+  return {
+    'model_id': modelId,
+    'ref': ref,
+    'ch_number': chNumber,
+    'ch_tool': jsonEncode(chTool), // Conversion en JSON
+  };
+}
 
   // Conversion d'un map SQLite en objet `Model`
   factory Model.fromMap(Map<String, dynamic> map) {
-    List<Map<String, dynamic>> chToolParsed = [];
-    if (map['ch_tool'] != null) {
-      chToolParsed = (map['ch_tool'] as String)
-          .split(',')
-          .map((e) {
-            final parts = e.split(':');
-            return {
-              'channels': parts[0].split(';').map(int.parse).toList(),
-              'tool_id': int.parse(parts[1]),
-            };
-          })
-          .toList();
-    }
-    return Model(
-      modelId: map['model_id'],
-      ref: map['ref'],
-      chNumber: map['ch_number'],
-      chTool: chToolParsed,
+  List<Map<String, dynamic>> chToolParsed = [];
+  if (map['ch_tool'] != null) {
+    chToolParsed = List<Map<String, dynamic>>.from(
+      jsonDecode(map['ch_tool']).map((e) => {
+            'channels': List<int>.from(e['channels']),
+            'tool_id': e['tool_id'],
+          }),
     );
   }
+
+  return Model(
+    modelId: map['model_id'],
+    ref: map['ref'],
+    chNumber: map['ch_number'],
+    chTool: chToolParsed,
+  );
+}
+
 }
