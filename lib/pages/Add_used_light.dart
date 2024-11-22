@@ -47,6 +47,7 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
     final newUsedLight = UsedLight(
       modelId: -1, // -1 signifie "non défini" pour le modèle
       activated: false,
+      channels: [], // Initialisé à une liste vide, remplie après sélection
     );
 
     final id = await dbHelper.insertUsedLight(newUsedLight);
@@ -60,22 +61,31 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
     if (model == null) return;
 
     setState(() {
-      int channels = model.chNumber;
-      if (model.modelId != null) {
-        usedLights[index] = usedLights[index].copyWith(
-          modelId: model.modelId!,
-          activated: true,
+      int beginChannel = 1;
+
+      // Calculer beginChannel en fonction des lumières précédentes
+      for (int i = 0; i < index; i++) {
+        var previousModel = models.firstWhereOrNull(
+          (model) => model.modelId == usedLights[i].modelId,
         );
+        if (previousModel != null) {
+          beginChannel += previousModel.chNumber;
+        }
       }
 
-      // Calculer le prochain canal disponible
-      currentChannel = usedLights.fold<int>(
-        1,
-        (prev, light) =>
-            prev +
-            models
-                .firstWhere((model) => model.modelId == light.modelId)
-                .chNumber,
+      int endChannel = beginChannel + model.chNumber - 1;
+
+      // Générer la liste des canaux entre beginChannel et endChannel
+      List<int> channelsList = List<int>.generate(
+        endChannel - beginChannel + 1,
+        (i) => beginChannel + i,
+      );
+
+      // Mettre à jour les informations de la lumière utilisée
+      usedLights[index] = usedLights[index].copyWith(
+        modelId: model.modelId!,
+        activated: true,
+        channels: channelsList,
       );
     });
 

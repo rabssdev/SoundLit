@@ -41,6 +41,7 @@ class _UsedLightPageState extends State<UsedLightPage> {
       final newUsedLight = UsedLight(
         modelId: _selectedModelId!,
         activated: _activated,
+        channels: [1, 2, 3],
       );
 
       await _dbHelper.insertUsedLight(newUsedLight);

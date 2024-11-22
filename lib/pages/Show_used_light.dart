@@ -49,33 +49,33 @@ class _UsedLightsPageState extends State<UsedLightsPage> {
 
                 // Trouver le modèle associé à la Used Light
                 var associatedModel = models.firstWhere(
-                    (model) => model.modelId == usedLight.modelId,
-                    orElse: () => Model(
-                          modelId: -1,
-                          ref: "Non défini",
-                          chNumber: 0,
-                          chTool: [], // Fournir une liste vide pour chTool
-                        ));
+                  (model) => model.modelId == usedLight.modelId,
+                  orElse: () => Model(
+                    modelId: -1,
+                    ref: "Non défini",
+                    chNumber: 0,
+                    chTool: [], // Fournir une liste vide pour chTool
+                  ),
+                );
 
                 return Card(
                   margin: EdgeInsets.all(8.0),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Used Light ID: ${usedLight.usedLightId}",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              "Model: ${associatedModel.ref}", // Affiche le modèle associé
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                        Text(
+                          "Used Light ID: ${usedLight.usedLightId}",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          "Model: ${associatedModel.ref}", // Affiche le modèle associé
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          "Channels: ${usedLight.channels.join(', ')}", // Affiche la liste des canaux
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
                         ),
                       ],
                     ),

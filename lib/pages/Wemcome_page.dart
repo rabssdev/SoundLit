@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/models/circle_item.dart';
 
+import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
+
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
@@ -11,18 +13,57 @@ class WelcomePage extends StatelessWidget {
         appBar: AppBar(
           title: Text('Cercles avec Activation'),
         ),
-        body: CircleScroller(
-          totalCircles: 21,
-          visibleCircles: 5,
-          circleDiameter: 80.0,
-        ),
+        body:ColorPickerPage(),
       ),
     );
   }
 }
 
+//****************************COLOR PICKER */
 
 
+class ColorPickerPage extends StatefulWidget {
+  @override
+  _ColorPickerPageState createState() => _ColorPickerPageState();
+}
+
+class _ColorPickerPageState extends State<ColorPickerPage> {
+  Color selectedColor = Colors.red; // Couleur par défaut
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sélecteur de couleur simple'),
+        backgroundColor: selectedColor,
+      ),
+      body: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleColorPicker(
+              size: const Size(150,150),
+              onChanged:_onColorChanged,
+              textStyle : const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
+              thumbSize : 12,
+            ),
+            // const SizedBox(height: 20),
+            Text(
+              'R: ${selectedColor.red}, G: ${selectedColor.green}, B: ${selectedColor.blue}',
+              style: const TextStyle(fontSize: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onColorChanged(Color color){
+    setState((){
+      selectedColor=color;
+    });
+  }
+}
 
 
 

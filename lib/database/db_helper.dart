@@ -67,6 +67,7 @@ class DBHelper {
             used_light_id INTEGER PRIMARY KEY AUTOINCREMENT,
             model_id INTEGER NOT NULL,
             activated INTEGER NOT NULL,
+            channels TEXT NOT NULL,
             FOREIGN KEY (model_id) REFERENCES Model(model_id)
           )
         ''');
@@ -206,22 +207,21 @@ class DBHelper {
   }
 
   // Récupérer un outil par son ID
-Future<Tools?> getToolById(int toolId) async {
-  final db = await database;
-  final result = await db.query(
-    'Tools',
-    where: 'tools_id = ?',
-    whereArgs: [toolId],
-  );
+  Future<Tools?> getToolById(int toolId) async {
+    final db = await database;
+    final result = await db.query(
+      'Tools',
+      where: 'tools_id = ?',
+      whereArgs: [toolId],
+    );
 
-  if (result.isEmpty) {
-    // Retourner null si aucun outil n'est trouvé
-    return null;
+    if (result.isEmpty) {
+      // Retourner null si aucun outil n'est trouvé
+      return null;
+    }
+
+    return Tools.fromMap(result.first);
   }
-
-  return Tools.fromMap(result.first);
-}
-
 
   // Ajouter un modèle
   Future<int> insertModel(Model model) async {
@@ -259,10 +259,11 @@ Future<Tools?> getToolById(int toolId) async {
 
 //******************************CRUD USED_LIGHT */
 
-  Future<int> insertUsedLight(UsedLight usedLight) async {
-    final db = await database;
-    return await db.insert('UsedLight', usedLight.toMap());
-  }
+Future<int> insertUsedLight(UsedLight usedLight) async {
+  final db = await database;
+  return await db.insert('UsedLight', usedLight.toMap());
+}
+
 
   Future<List<UsedLight>> getAllUsedLights() async {
     final db = await database;
