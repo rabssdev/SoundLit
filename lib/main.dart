@@ -11,6 +11,8 @@ import 'pages/Used_light_CRUD.dart';
 import 'pages/State_CRUD.dart';
 import 'pages/Add_model_page.dart';
 import 'pages/Show_models.dart';
+import 'pages/Add_used_light.dart';
+import 'pages/Show_used_light.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
     UsedLightPage(),
     StatuPage(),
     ModelsScreen(),
+    AddUsedLightPage(),
+    UsedLightsPage(),
   ];
 
   // Méthode de changement de page
@@ -134,6 +138,16 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.home),
               title: Text('Show models'),
               onTap: () => _onItemTapped(9),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Add used Light'),
+              onTap: () => _onItemTapped(10),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Show used Light'),
+              onTap: () => _onItemTapped(11),
             ),
           ],
         ),
