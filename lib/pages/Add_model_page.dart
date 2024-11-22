@@ -14,11 +14,10 @@ class _AddModelPageState extends State<AddModelPage> {
   final TextEditingController _chNumberController = TextEditingController();
   int? chNumber;
   List<int> selectedChannels = [];
-  Map<int, Map<String, dynamic>> channelToolMap = {};
+  Map<String, dynamic> groupedToolMap = {}; // Map regroupant les canaux, tool_id et label
   bool showSuccessMessage = false;
 
   List<Tools> tools = [];
-  
   Tools? selectedTool;
   final TextEditingController _labelController = TextEditingController();
 
@@ -38,12 +37,16 @@ class _AddModelPageState extends State<AddModelPage> {
 
   void _validateToolSelection() {
     if (selectedChannels.length == (selectedTool?.chUsed ?? 0)) {
-      for (int channel in selectedChannels) {
-        channelToolMap[channel] = {
+      final key = '${selectedTool?.toolsId}-${_labelController.text}';
+      if (!groupedToolMap.containsKey(key)) {
+        groupedToolMap[key] = {
+          'channels': [],
           'tool_id': selectedTool?.toolsId,
           'label': _labelController.text,
         };
       }
+      groupedToolMap[key]['channels'].addAll(selectedChannels);
+
       setState(() {
         selectedChannels.clear();
         _labelController.clear();
@@ -64,11 +67,11 @@ class _AddModelPageState extends State<AddModelPage> {
     final model = Model(
       ref: _refController.text,
       chNumber: chNumber!,
-      chTool: channelToolMap.entries.map((entry) {
+      chTool: groupedToolMap.values.map((entry) {
         return {
-          'channels': [entry.key],
-          'tool_id': entry.value['tool_id'],
-          'label': entry.value['label'],
+          'channels': entry['channels'],
+          'tool_id': entry['tool_id'],
+          'label': entry['label'],
         };
       }).toList(),
     );
@@ -86,7 +89,7 @@ class _AddModelPageState extends State<AddModelPage> {
         _chNumberController.clear();
         chNumber = null;
         selectedChannels.clear();
-        channelToolMap.clear();
+        groupedToolMap.clear();
       });
     });
   }
@@ -152,7 +155,8 @@ class _AddModelPageState extends State<AddModelPage> {
                           itemBuilder: (context, index) {
                             final channelNumber = index + 1;
                             final isSelected = selectedChannels.contains(channelNumber);
-                            final isValidated = channelToolMap.containsKey(channelNumber);
+                            final isValidated = groupedToolMap.values.any(
+                                (entry) => entry['channels'].contains(channelNumber));
 
                             return GestureDetector(
                               onTap: () {
