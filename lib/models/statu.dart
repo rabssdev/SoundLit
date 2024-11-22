@@ -1,8 +1,8 @@
 class Statu {
-  final int? statuId; // Clé primaire
-  final List<int> channels; // Liste de canaux
-  final bool activated; // Statut activé
-  final int delayAfter; // Délai après
+  int? statuId; // Clé primaire
+  List<int> channels; // Liste de canaux
+  bool activated; // Statut activé
+  int delayAfter; // Délai après
 
   Statu({
     this.statuId,

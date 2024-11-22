@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'pages/Control_page.dart';
+import 'pages/Control_page.dart';
 import 'pages/Run_page.dart';
 import 'pages/Add_light_page.dart';
 import 'pages/Wemcome_page.dart';
@@ -13,7 +13,7 @@ import 'pages/Add_model_page.dart';
 import 'pages/Show_models.dart';
 import 'pages/Add_used_light.dart';
 import 'pages/Show_used_light.dart';
-import 'pages/TEST.dart';
+// import 'pages/TEST.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
