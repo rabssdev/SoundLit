@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_3/models/circle_item.dart';
 
 import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
+import 'dart:convert';
+import '../models/model.dart'; // Importer la classe Model
+import '../database/db_helper.dart'; // Importer la classe DBHelper
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -13,7 +16,7 @@ class WelcomePage extends StatelessWidget {
         appBar: AppBar(
           title: Text('Cercles avec Activation'),
         ),
-        body:ColorPickerPage(),
+        body:ModelListPage(),
       ),
     );
   }
@@ -155,6 +158,87 @@ class _CircleScrollerState extends State<CircleScroller> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+class ModelListPage extends StatefulWidget {
+  @override
+  _ModelListPageState createState() => _ModelListPageState();
+}
+
+class _ModelListPageState extends State<ModelListPage> {
+  final DBHelper _dbHelper = DBHelper();
+  List<Model> _models = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchModels();
+  }
+
+  Future<void> _fetchModels() async {
+    final models = await _dbHelper.getAllModels();
+    setState(() {
+      _models = models;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Liste des Modèles'),
+      ),
+      body: _models.isEmpty
+          ? Center(
+              child: Text(
+                'Aucun modèle trouvé.',
+                style: TextStyle(fontSize: 18),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _models.length,
+              itemBuilder: (context, index) {
+                final model = _models[index];
+                return Card(
+                  margin: EdgeInsets.all(10),
+                  child: ListTile(
+                    title: Text(
+                      'Modèle: ${model.ref}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('ID: ${model.modelId ?? "N/A"}'),
+                        Text('Nombre de canaux: ${model.chNumber}'),
+                        Text(
+                          'Outils: ${jsonEncode(model.chTool)}',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Action pour ajouter un modèle ou recharger la liste
+          _fetchModels();
+        },
+        child: Icon(Icons.refresh),
+        tooltip: 'Rafraîchir la liste',
       ),
     );
   }

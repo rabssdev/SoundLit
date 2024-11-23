@@ -75,7 +75,7 @@ class _AddModelPageState extends State<AddModelPage> {
         };
       }).toList(),
     );
-
+    // print(model.toMap());
     await db.insertModel(model);
 
     setState(() {

@@ -1,11 +1,146 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/models/custom_slider.dart';
+import 'package:provider/provider.dart';
+
 import '../models/statu.dart';
 import '../database/db_helper.dart';
 import '../models/model.dart';
 import '../models/used_light.dart';
 import '../models/tools.dart';
 import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
+
+class ControllerModel extends ChangeNotifier {
+  List<UsedLight> selectedUsedLights = [
+    UsedLight(
+      usedLightId: 1,
+      modelId: 1,
+      activated: true,
+      channels: [1, 2, 3, 4],
+    ),
+    UsedLight(
+      usedLightId: 1,
+      modelId: 1,
+      activated: true,
+      channels: [1, 2, 3, 4],
+    ),
+    UsedLight(
+      usedLightId: 1,
+      modelId: 1,
+      activated: true,
+      channels: [1, 2, 3, 4],
+    ),
+    UsedLight(
+      usedLightId: 1,
+      modelId: 1,
+      activated: true,
+      channels: [1, 2, 3, 4],
+    ),
+  ];
+  List<Model> models = [
+    Model(
+      modelId: 1,
+      ref: 'Model001',
+      chNumber: 3,
+      chTool: [
+        {
+          'channels': [1, 2, 3],
+          'tool_id': 1,
+          'label': "pallete"
+        },
+        {
+          'channels': [4],
+          'tool_id': 2,
+          'label': "slider test"
+        }
+      ],
+    ),
+    Model(
+      modelId: 2,
+      ref: 'Model002',
+      chNumber: 3,
+      chTool: [
+        {
+          'channels': [1, 2, 3],
+          'tool_id': 2,
+          'label': "slider tsy vri"
+        },
+      ],
+    ),
+  ];
+
+  void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
+    if (newUsedLights != null) {
+      selectedUsedLights = newUsedLights;
+    }
+    if (newModels != null) {
+      models = newModels;
+    }
+    notifyListeners();
+  }
+}
+
+List<UsedLight> selectedUsedLights = [
+  UsedLight(
+    usedLightId: 1,
+    modelId: 1,
+    activated: true,
+    channels: [1, 2, 3, 4],
+  ),
+  UsedLight(
+    usedLightId: 1,
+    modelId: 1,
+    activated: true,
+    channels: [1, 2, 3, 4],
+  ),
+  UsedLight(
+    usedLightId: 1,
+    modelId: 1,
+    activated: true,
+    channels: [1, 2, 3, 4],
+  ),
+  UsedLight(
+    usedLightId: 1,
+    modelId: 1,
+    activated: true,
+    channels: [1, 2, 3, 4],
+  ),
+];
+List<Model> models = [
+  Model(
+    modelId: 1,
+    ref: 'Model001',
+    chNumber: 3,
+    chTool: [
+      {
+        'channels': [1, 2, 3],
+        'tool_id': 1,
+        'label': "pallete"
+      },
+      {
+        'channels': [4],
+        'tool_id': 2,
+        'label': "slider test"
+      }
+    ],
+  ),
+  Model(
+    modelId: 2,
+    ref: 'Model002',
+    chNumber: 3,
+    chTool: [
+      {
+        'channels': [1, 2, 3],
+        'tool_id': 2,
+        'label': "slider tsy vri"
+      },
+    ],
+  ),
+];
+ControllerModel test=ControllerModel();
+ControlerWidget controllerWidget = ControlerWidget(
+  selectedUsedLights: test.selectedUsedLights,
+  models: test.models,
+);
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -31,49 +166,6 @@ class SliderScreen extends StatefulWidget {
 }
 
 class _SliderScreenState extends State<SliderScreen> {
-  List<UsedLight> selectedUsedLights = [
-    UsedLight(
-      usedLightId: 1,
-      modelId: 1,
-      activated: true,
-      channels: [1, 2, 3, 4],
-    ),
-    UsedLight(
-      usedLightId: 2,
-      modelId: 1,
-      activated: false,
-      channels: [5, 6, 7,8],
-    ),
-  ];
-  List<Model> models = [
-    Model(
-      modelId: 1,
-      ref: 'Model001',
-      chNumber: 3,
-      chTool: [
-        {
-          'channels': [1, 2, 3],
-          'tool_id': 1
-        },
-        {
-          'channels': [4],
-          'tool_id': 2
-        }
-      ],
-    ),
-    Model(
-      modelId: 2,
-      ref: 'Model002',
-      chNumber: 3,
-      chTool: [
-        {
-          'channels': [1, 2, 3],
-          'tool_id': 2
-        },
-      ],
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -108,11 +200,21 @@ class _SliderScreenState extends State<SliderScreen> {
           child: Row(
             children: [
               Expanded(
-                child: ControlerWidget(
-                  selectedUsedLights: selectedUsedLights,
-                  models: models,
-                ),
+                child: Consumer<ControllerModel>(
+                    builder: (context, controller, child) {
+                  if (controller.selectedUsedLights.isEmpty) {
+                    return Center(child: Text('No lights available'));
+                  }
+                  return ListView.builder(
+                    itemCount: controller.selectedUsedLights.length,
+                    itemBuilder: (context, index) {
+                      final light = controller.selectedUsedLights[index];
+                      return Text(light.channels.toString());
+                    },
+                  );
+                }),
               ),
+              Expanded(child: controllerWidget),
               SizedBox(
                 width: 120, // Fixe une hauteur pour le contenu
                 child: UsedLightListScreen(),
@@ -298,6 +400,8 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
   Map<int, Color> modelColors = {}; // Map des couleurs par modèle
   Set<int> selectedUsedLightIds = {}; // Ensemble des IDs sélectionnés
   late DBHelper dbHelper;
+  final GlobalKey<_ControlerWidgetState> controllerKey =
+      GlobalKey<_ControlerWidgetState>();
 
   @override
   void initState() {
@@ -352,7 +456,17 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
           selectedUsedLightIds.add(usedLight.usedLightId!);
         }
       });
-      print(selectedUsedLightIds);
+
+      // cw.updateData(
+      //     newSelectedUsedLights: [UsedLight(modelId: 1)],
+      //     newModels: [Model(modelId: 1, ref: 'NewRef', chNumber: 1, chTool: [])],
+      //   );
+      context
+          .read<ControllerModel>()
+          .updateData(getSelectedUsedLights(), models);
+      print(
+          selectedUsedLightIds); //****************************************************************************************************ACTION ENVOYE DES USEDLIGHT VERS CONTROLLERWIDGET */
+      print(getSelectedUsedLights()); // Liste des objets UsedLight sélectionnés
     } else {
       // Optionnel : Afficher une alerte si la sélection est invalide
       ScaffoldMessenger.of(context).showSnackBar(
@@ -360,6 +474,20 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
             content: Text(
                 'Vous ne pouvez sélectionner que des éléments avec le même modèle.')),
       );
+    }
+  }
+
+  List<UsedLight> getSelectedUsedLights() {
+    return usedLights
+        .where((light) => selectedUsedLightIds.contains(light.usedLightId))
+        .toList();
+  }
+
+  void _printSelectedUsedLights() {
+    final selectedLights = getSelectedUsedLights();
+    for (var light in selectedLights) {
+      print(
+          'UsedLight: ID=${light.usedLightId}, ModelID=${light.modelId}, Channels=${light.channels}');
     }
   }
 
@@ -408,11 +536,11 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
 }
 
 class ControlerWidget extends StatefulWidget {
-  final List<UsedLight> selectedUsedLights; // Liste des UsedLights sélectionnés
-  final List<Model>
-      models; // Liste des modèles (pour accéder à chNumber et chTool)
+  // Les attributs ne sont plus marqués final pour permettre leur mise à jour.
+  List<UsedLight> selectedUsedLights;
+  List<Model> models;
 
-  const ControlerWidget({
+  ControlerWidget({
     required this.selectedUsedLights,
     required this.models,
     Key? key,
@@ -424,7 +552,6 @@ class ControlerWidget extends StatefulWidget {
 
 class _ControlerWidgetState extends State<ControlerWidget> {
   late List<Tools> tools = []; // Liste des tools générés
-  int currentIndex = 0; // Index du tool affiché
 
   @override
   void initState() {
@@ -432,16 +559,15 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     _generateTools();
   }
 
+  /// Génère les outils en fonction de selectedUsedLights et models
   void _generateTools() {
-    // Vérifie les modèles associés aux UsedLights sélectionnés
-    // print(widget.selectedUsedLights);
+    tools.clear(); // Réinitialise la liste des outils
     for (var light in widget.selectedUsedLights) {
       final model = widget.models.firstWhere(
         (model) => model.modelId == light.modelId,
         orElse: () => Model(modelId: 0, ref: '', chNumber: 0, chTool: []),
       );
 
-      // Générez les tools à partir des informations de chTool
       for (var toolData in model.chTool) {
         List<int> channels = toolData["channels"];
         int toolId = toolData["tool_id"];
@@ -450,28 +576,27 @@ class _ControlerWidgetState extends State<ControlerWidget> {
           toolsId: toolId,
           name: toolId == 1 ? 'Color Picker' : 'Slider',
           chUsed: channels.length,
-          label: 'Channels: ${channels.join(", ")}',
+          label: toolData["label"],
         ));
       }
     }
 
-    setState(() {});
+    setState(() {}); // Met à jour l'interface utilisateur
   }
 
-  void _nextTool() {
-    if (currentIndex < tools.length - 1) {
-      setState(() {
-        currentIndex++;
-      });
+  /// Méthode publique pour mettre à jour les attributs depuis d'autres classes
+  void updateData({
+    List<UsedLight>? newSelectedUsedLights,
+    List<Model>? newModels,
+  }) {
+    if (newSelectedUsedLights != null) {
+      widget.selectedUsedLights = newSelectedUsedLights;
     }
-  }
+    if (newModels != null) {
+      widget.models = newModels;
+    }
 
-  void _previousTool() {
-    if (currentIndex > 0) {
-      setState(() {
-        currentIndex--;
-      });
-    }
+    _generateTools(); // Regénère les outils en fonction des nouvelles données
   }
 
   @override
@@ -482,44 +607,24 @@ class _ControlerWidgetState extends State<ControlerWidget> {
       );
     }
 
-    final currentTool = tools[currentIndex];
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Controler Widget'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_left),
-                onPressed: _previousTool,
+      body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal, // Défilement horizontal
+        child: Row(
+          children: tools.map((tool) {
+            return Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (tool.toolsId == 1) _buildColorPicker(),
+                  if (tool.toolsId == 2) _buildVerticalSlider(),
+                  Text(tool.label),
+                ],
               ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      currentTool.name,
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    if (currentTool.toolsId == 1) _buildColorPicker(),
-                    if (currentTool.toolsId == 2) _buildSlider(),
-                    Text(currentTool.label),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.arrow_right),
-                onPressed: _nextTool,
-              ),
-            ],
-          ),
-        ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -537,18 +642,21 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     );
   }
 
-  Widget _buildSlider() {
+  Widget _buildVerticalSlider() {
     double value = 50;
 
-    return Slider(
-      value: value,
-      min: 0,
-      max: 100,
-      onChanged: (newValue) {
-        setState(() {
-          value = newValue;
-        });
-      },
+    return RotatedBox(
+      quarterTurns: 3, // Oriente le slider verticalement
+      child: Slider(
+        value: value,
+        min: 0,
+        max: 100,
+        onChanged: (newValue) {
+          setState(() {
+            value = newValue;
+          });
+        },
+      ),
     );
   }
 }

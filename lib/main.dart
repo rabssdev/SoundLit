@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
 import 'pages/Control_page.dart';
 import 'pages/Run_page.dart';
 import 'pages/Add_light_page.dart';
@@ -23,7 +25,12 @@ void main() {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]).then((_) {
-    runApp(MyApp());
+    runApp(
+    ChangeNotifierProvider(
+      create: (context) => ControllerModel(),
+      child: MyApp(),
+    ),
+  );
   });
 }
 

@@ -31,6 +31,7 @@ class Model {
       jsonDecode(map['ch_tool']).map((e) => {
             'channels': List<int>.from(e['channels']),
             'tool_id': e['tool_id'],
+            'label': e['label']
           }),
     );
   }
