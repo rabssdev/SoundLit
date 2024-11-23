@@ -4,6 +4,8 @@ import '../models/statu.dart';
 import '../database/db_helper.dart';
 import '../models/model.dart';
 import '../models/used_light.dart';
+import '../models/tools.dart';
+import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -25,10 +27,75 @@ class SliderScreen extends StatefulWidget {
   const SliderScreen({super.key});
 
   @override
-  _SliderScreenState createState() => _SliderScreenState();
+  State<SliderScreen> createState() => _SliderScreenState();
 }
 
 class _SliderScreenState extends State<SliderScreen> {
+  List<UsedLight> selectedUsedLights = [
+    UsedLight(
+      usedLightId: 1,
+      modelId: 1,
+      activated: true,
+      channels: [1, 2, 3, 4],
+    ),
+    UsedLight(
+      usedLightId: 2,
+      modelId: 1,
+      activated: false,
+      channels: [5, 6, 7,8],
+    ),
+  ];
+  List<Model> models = [
+    Model(
+      modelId: 1,
+      ref: 'Model001',
+      chNumber: 3,
+      chTool: [
+        {
+          'channels': [1, 2, 3],
+          'tool_id': 1
+        },
+        {
+          'channels': [4],
+          'tool_id': 2
+        }
+      ],
+    ),
+    Model(
+      modelId: 2,
+      ref: 'Model002',
+      chNumber: 3,
+      chTool: [
+        {
+          'channels': [1, 2, 3],
+          'tool_id': 2
+        },
+      ],
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    // Exemple pour charger des données depuis la DBHelper
+    final dbHelper = DBHelper();
+    final fetchedModels = await dbHelper.getAllModels();
+
+    List<UsedLight> usedLights = selectedUsedLights;
+
+    final List<UsedLight> fetchedSelectedLights =
+        selectedUsedLights; // À remplir en fonction de votre logique.
+
+    setState(() {
+      models = fetchedModels;
+      selectedUsedLights = fetchedSelectedLights;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -40,12 +107,16 @@ class _SliderScreenState extends State<SliderScreen> {
         Expanded(
           child: Row(
             children: [
-              ControlWidget(),
+              Expanded(
+                child: ControlerWidget(
+                  selectedUsedLights: selectedUsedLights,
+                  models: models,
+                ),
+              ),
               SizedBox(
                 width: 120, // Fixe une hauteur pour le contenu
                 child: UsedLightListScreen(),
               ),
-              // UsedLightListScreen(),
             ],
           ),
         ),
@@ -281,6 +352,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
           selectedUsedLightIds.add(usedLight.usedLightId!);
         }
       });
+      print(selectedUsedLightIds);
     } else {
       // Optionnel : Afficher une alerte si la sélection est invalide
       ScaffoldMessenger.of(context).showSnackBar(
@@ -294,7 +366,6 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: ListView.builder(
         itemCount: usedLights.length,
         itemBuilder: (context, index) {
@@ -332,6 +403,152 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+class ControlerWidget extends StatefulWidget {
+  final List<UsedLight> selectedUsedLights; // Liste des UsedLights sélectionnés
+  final List<Model>
+      models; // Liste des modèles (pour accéder à chNumber et chTool)
+
+  const ControlerWidget({
+    required this.selectedUsedLights,
+    required this.models,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  _ControlerWidgetState createState() => _ControlerWidgetState();
+}
+
+class _ControlerWidgetState extends State<ControlerWidget> {
+  late List<Tools> tools = []; // Liste des tools générés
+  int currentIndex = 0; // Index du tool affiché
+
+  @override
+  void initState() {
+    super.initState();
+    _generateTools();
+  }
+
+  void _generateTools() {
+    // Vérifie les modèles associés aux UsedLights sélectionnés
+    // print(widget.selectedUsedLights);
+    for (var light in widget.selectedUsedLights) {
+      final model = widget.models.firstWhere(
+        (model) => model.modelId == light.modelId,
+        orElse: () => Model(modelId: 0, ref: '', chNumber: 0, chTool: []),
+      );
+
+      // Générez les tools à partir des informations de chTool
+      for (var toolData in model.chTool) {
+        List<int> channels = toolData["channels"];
+        int toolId = toolData["tool_id"];
+
+        tools.add(Tools(
+          toolsId: toolId,
+          name: toolId == 1 ? 'Color Picker' : 'Slider',
+          chUsed: channels.length,
+          label: 'Channels: ${channels.join(", ")}',
+        ));
+      }
+    }
+
+    setState(() {});
+  }
+
+  void _nextTool() {
+    if (currentIndex < tools.length - 1) {
+      setState(() {
+        currentIndex++;
+      });
+    }
+  }
+
+  void _previousTool() {
+    if (currentIndex > 0) {
+      setState(() {
+        currentIndex--;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (tools.isEmpty) {
+      return Center(
+        child: Text('Aucun outil disponible'),
+      );
+    }
+
+    final currentTool = tools[currentIndex];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Controler Widget'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_left),
+                onPressed: _previousTool,
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      currentTool.name,
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    if (currentTool.toolsId == 1) _buildColorPicker(),
+                    if (currentTool.toolsId == 2) _buildSlider(),
+                    Text(currentTool.label),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_right),
+                onPressed: _nextTool,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorPicker() {
+    Color selectedColor = Colors.red;
+
+    return CircleColorPicker(
+      size: const Size(200, 200),
+      onChanged: (color) {
+        setState(() {
+          selectedColor = color;
+        });
+      },
+    );
+  }
+
+  Widget _buildSlider() {
+    double value = 50;
+
+    return Slider(
+      value: value,
+      min: 0,
+      max: 100,
+      onChanged: (newValue) {
+        setState(() {
+          value = newValue;
+        });
+      },
     );
   }
 }
