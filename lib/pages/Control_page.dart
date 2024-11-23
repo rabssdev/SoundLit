@@ -10,63 +10,8 @@ import '../models/tools.dart';
 import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
 
 class ControllerModel extends ChangeNotifier {
-  List<UsedLight> selectedUsedLights = [
-    UsedLight(
-      usedLightId: 1,
-      modelId: 1,
-      activated: true,
-      channels: [1, 2, 3, 4],
-    ),
-    UsedLight(
-      usedLightId: 1,
-      modelId: 1,
-      activated: true,
-      channels: [1, 2, 3, 4],
-    ),
-    UsedLight(
-      usedLightId: 1,
-      modelId: 1,
-      activated: true,
-      channels: [1, 2, 3, 4],
-    ),
-    UsedLight(
-      usedLightId: 1,
-      modelId: 1,
-      activated: true,
-      channels: [1, 2, 3, 4],
-    ),
-  ];
-  List<Model> models = [
-    Model(
-      modelId: 1,
-      ref: 'Model001',
-      chNumber: 3,
-      chTool: [
-        {
-          'channels': [1, 2, 3],
-          'tool_id': 1,
-          'label': "pallete"
-        },
-        {
-          'channels': [4],
-          'tool_id': 2,
-          'label': "slider test"
-        }
-      ],
-    ),
-    Model(
-      modelId: 2,
-      ref: 'Model002',
-      chNumber: 3,
-      chTool: [
-        {
-          'channels': [1, 2, 3],
-          'tool_id': 2,
-          'label': "slider tsy vri"
-        },
-      ],
-    ),
-  ];
+  List<UsedLight> selectedUsedLights = [];
+  List<Model> models = [];
 
   void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
     if (newUsedLights != null) {
@@ -79,68 +24,7 @@ class ControllerModel extends ChangeNotifier {
   }
 }
 
-List<UsedLight> selectedUsedLights = [
-  UsedLight(
-    usedLightId: 1,
-    modelId: 1,
-    activated: true,
-    channels: [1, 2, 3, 4],
-  ),
-  UsedLight(
-    usedLightId: 1,
-    modelId: 1,
-    activated: true,
-    channels: [1, 2, 3, 4],
-  ),
-  UsedLight(
-    usedLightId: 1,
-    modelId: 1,
-    activated: true,
-    channels: [1, 2, 3, 4],
-  ),
-  UsedLight(
-    usedLightId: 1,
-    modelId: 1,
-    activated: true,
-    channels: [1, 2, 3, 4],
-  ),
-];
-List<Model> models = [
-  Model(
-    modelId: 1,
-    ref: 'Model001',
-    chNumber: 3,
-    chTool: [
-      {
-        'channels': [1, 2, 3],
-        'tool_id': 1,
-        'label': "pallete"
-      },
-      {
-        'channels': [4],
-        'tool_id': 2,
-        'label': "slider test"
-      }
-    ],
-  ),
-  Model(
-    modelId: 2,
-    ref: 'Model002',
-    chNumber: 3,
-    chTool: [
-      {
-        'channels': [1, 2, 3],
-        'tool_id': 2,
-        'label': "slider tsy vri"
-      },
-    ],
-  ),
-];
-ControllerModel test=ControllerModel();
-ControlerWidget controllerWidget = ControlerWidget(
-  selectedUsedLights: test.selectedUsedLights,
-  models: test.models,
-);
+
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -175,17 +59,9 @@ class _SliderScreenState extends State<SliderScreen> {
   Future<void> _fetchInitialData() async {
     // Exemple pour charger des données depuis la DBHelper
     final dbHelper = DBHelper();
-    final fetchedModels = await dbHelper.getAllModels();
+// À remplir en fonction de votre logique.
 
-    List<UsedLight> usedLights = selectedUsedLights;
-
-    final List<UsedLight> fetchedSelectedLights =
-        selectedUsedLights; // À remplir en fonction de votre logique.
-
-    setState(() {
-      models = fetchedModels;
-      selectedUsedLights = fetchedSelectedLights;
-    });
+    setState(() {});
   }
 
   @override
@@ -199,22 +75,8 @@ class _SliderScreenState extends State<SliderScreen> {
         Expanded(
           child: Row(
             children: [
-              Expanded(
-                child: Consumer<ControllerModel>(
-                    builder: (context, controller, child) {
-                  if (controller.selectedUsedLights.isEmpty) {
-                    return Center(child: Text('No lights available'));
-                  }
-                  return ListView.builder(
-                    itemCount: controller.selectedUsedLights.length,
-                    itemBuilder: (context, index) {
-                      final light = controller.selectedUsedLights[index];
-                      return Text(light.channels.toString());
-                    },
-                  );
-                }),
-              ),
-              Expanded(child: controllerWidget),
+             
+              Expanded(child: ControlerWidget()),
               SizedBox(
                 width: 120, // Fixe une hauteur pour le contenu
                 child: UsedLightListScreen(),
@@ -396,6 +258,7 @@ class UsedLightListScreen extends StatefulWidget {
 }
 
 class _UsedLightListScreenState extends State<UsedLightListScreen> {
+  List<Model> models = [];
   List<UsedLight> usedLights = [];
   Map<int, Color> modelColors = {}; // Map des couleurs par modèle
   Set<int> selectedUsedLightIds = {}; // Ensemble des IDs sélectionnés
@@ -414,6 +277,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
     // Charge les UsedLight et les modèles
     final lights = await dbHelper.getAllUsedLights();
     final models = await dbHelper.getAllModels();
+    this.models = await dbHelper.getAllModels();
 
     // Associe chaque modèle à une couleur unique
     final uniqueColors = [
@@ -457,13 +321,10 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
         }
       });
 
-      // cw.updateData(
-      //     newSelectedUsedLights: [UsedLight(modelId: 1)],
-      //     newModels: [Model(modelId: 1, ref: 'NewRef', chNumber: 1, chTool: [])],
-      //   );
       context
           .read<ControllerModel>()
           .updateData(getSelectedUsedLights(), models);
+
       print(
           selectedUsedLightIds); //****************************************************************************************************ACTION ENVOYE DES USEDLIGHT VERS CONTROLLERWIDGET */
       print(getSelectedUsedLights()); // Liste des objets UsedLight sélectionnés
@@ -536,15 +397,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
 }
 
 class ControlerWidget extends StatefulWidget {
-  // Les attributs ne sont plus marqués final pour permettre leur mise à jour.
-  List<UsedLight> selectedUsedLights;
-  List<Model> models;
-
-  ControlerWidget({
-    required this.selectedUsedLights,
-    required this.models,
-    Key? key,
-  }) : super(key: key);
+  ControlerWidget({Key? key}) : super(key: key);
 
   @override
   _ControlerWidgetState createState() => _ControlerWidgetState();
@@ -556,14 +409,18 @@ class _ControlerWidgetState extends State<ControlerWidget> {
   @override
   void initState() {
     super.initState();
-    _generateTools();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Générer les tools après le premier rendu
+      final controller = Provider.of<ControllerModel>(context, listen: false);
+      _generateTools(controller);
+    });
   }
 
   /// Génère les outils en fonction de selectedUsedLights et models
-  void _generateTools() {
+  void _generateTools(ControllerModel controller) {
     tools.clear(); // Réinitialise la liste des outils
-    for (var light in widget.selectedUsedLights) {
-      final model = widget.models.firstWhere(
+    for (var light in controller.selectedUsedLights) {
+      final model = controller.models.firstWhere(
         (model) => model.modelId == light.modelId,
         orElse: () => Model(modelId: 0, ref: '', chNumber: 0, chTool: []),
       );
@@ -580,27 +437,17 @@ class _ControlerWidgetState extends State<ControlerWidget> {
         ));
       }
     }
-
     setState(() {}); // Met à jour l'interface utilisateur
-  }
-
-  /// Méthode publique pour mettre à jour les attributs depuis d'autres classes
-  void updateData({
-    List<UsedLight>? newSelectedUsedLights,
-    List<Model>? newModels,
-  }) {
-    if (newSelectedUsedLights != null) {
-      widget.selectedUsedLights = newSelectedUsedLights;
-    }
-    if (newModels != null) {
-      widget.models = newModels;
-    }
-
-    _generateTools(); // Regénère les outils en fonction des nouvelles données
   }
 
   @override
   Widget build(BuildContext context) {
+    // Écouter les changements dans ControllerModel
+    final controller = Provider.of<ControllerModel>(context);
+
+    // Regénérer les tools à chaque changement de données
+    _generateTools(controller);
+
     if (tools.isEmpty) {
       return Center(
         child: Text('Aucun outil disponible'),
@@ -617,8 +464,8 @@ class _ControlerWidgetState extends State<ControlerWidget> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (tool.toolsId == 1) _buildColorPicker(),
-                  if (tool.toolsId == 2) _buildVerticalSlider(),
+                  if (tool.toolsId == 1) _buildVerticalSlider(),
+                  if (tool.toolsId == 2) _buildColorPicker(),
                   Text(tool.label),
                 ],
               ),
