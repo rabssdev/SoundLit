@@ -12,7 +12,10 @@ import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
 class ControllerModel extends ChangeNotifier {
   List<UsedLight> selectedUsedLights = [];
   List<Model> models = [];
+  List<int> channels =
+      List.generate(512, (_) => 0); // Initialise 512 channels à 0
 
+  /// Met à jour les données `selectedUsedLights` et `models`
   void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
     if (newUsedLights != null) {
       selectedUsedLights = newUsedLights;
@@ -22,9 +25,23 @@ class ControllerModel extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// Met à jour une valeur spécifique dans le tableau `channels`
+  void updateChannelValue(int index, int value) {
+    if (index >= 0 && index < channels.length) {
+      channels[index] = value;
+      notifyListeners();
+    } else {
+      throw RangeError('Index $index is out of bounds for channels');
+    }
+  }
+
+  /// Réinitialise tous les channels à 0
+  void resetChannels() {
+    channels.fillRange(0, channels.length, 0);
+    notifyListeners();
+  }
 }
-
-
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -70,12 +87,12 @@ class _SliderScreenState extends State<SliderScreen> {
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu
-          child: HorizontalStatuManager(),
+          // child: HorizontalStatuManager(),
+          child: ChannelValuesWidget(),
         ),
         Expanded(
           child: Row(
             children: [
-             
               Expanded(child: ControlerWidget()),
               SizedBox(
                 width: 120, // Fixe une hauteur pour le contenu
@@ -405,6 +422,8 @@ class ControlerWidget extends StatefulWidget {
 
 class _ControlerWidgetState extends State<ControlerWidget> {
   late List<Tools> tools = []; // Liste des tools générés
+  late List<List<List<int>>> tool_channels =
+      []; // Liste des channels groupés par outils
 
   @override
   void initState() {
@@ -416,27 +435,45 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     });
   }
 
-  /// Génère les outils en fonction de selectedUsedLights et models
+  /// Génère les outils en fonction de `selectedUsedLights` et des modèles
   void _generateTools(ControllerModel controller) {
     tools.clear(); // Réinitialise la liste des outils
+    tool_channels.clear();
     for (var light in controller.selectedUsedLights) {
       final model = controller.models.firstWhere(
         (model) => model.modelId == light.modelId,
         orElse: () => Model(modelId: 0, ref: '', chNumber: 0, chTool: []),
       );
 
-      for (var toolData in model.chTool) {
+      for (var i = 0; i < model.chTool.length; i++) {
+        final toolData = model.chTool[i];
         List<int> channels = toolData["channels"];
         int toolId = toolData["tool_id"];
 
-        tools.add(Tools(
-          toolsId: toolId,
-          name: toolId == 1 ? 'Color Picker' : 'Slider',
-          chUsed: channels.length,
-          label: toolData["label"],
-        ));
+        // Filtrer les canaux pour s'assurer qu'ils existent
+        final validChannels =
+            channels.where((ch) => ch < (light.channels.length) + 1).toList();
+        print(validChannels.toString());
+        // Si des canaux valides existent, ajouter à la liste
+        if (validChannels.isNotEmpty) {
+          if (tools.length > i) {
+            tool_channels[i]
+                .add(validChannels.map((ch) => light.channels[ch-1]).toList());
+          // }
+          } else {
+            tool_channels
+                .add([validChannels.map((ch) => light.channels[ch-1]).toList()]);
+            tools.add(Tools(
+              toolsId: toolId,
+              name: toolId == 1 ? 'Color Picker' : 'Slider',
+              chUsed: validChannels.length,
+              label: toolData["label"],
+            ));
+          }
+        }
       }
     }
+
     setState(() {}); // Met à jour l'interface utilisateur
   }
 
@@ -458,15 +495,20 @@ class _ControlerWidgetState extends State<ControlerWidget> {
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal, // Défilement horizontal
         child: Row(
-          children: tools.map((tool) {
+          children: tools.asMap().entries.map((entry) {
+            final index = entry.key;
+            final tool = tools[index];
+            final channelsGroup = tool_channels[index];
+
             return Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (tool.toolsId == 1) _buildVerticalSlider(),
-                  if (tool.toolsId == 2) _buildColorPicker(),
-                  Text(tool.label),
+                  if (tool.toolsId == 2) _buildColorPicker(channelsGroup),
+                  if (tool.toolsId == 1)
+                    _buildVerticalSlider(controller, channelsGroup),
+                  Text("Channels: ${channelsGroup.expand((e) => e).toList()}"),
                 ],
               ),
             );
@@ -476,7 +518,8 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     );
   }
 
-  Widget _buildColorPicker() {
+  /// Génère un color picker pour contrôler plusieurs groupes de canaux RGB
+  Widget _buildColorPicker(List<List<int>> channelGroups) {
     Color selectedColor = Colors.red;
 
     return CircleColorPicker(
@@ -484,25 +527,96 @@ class _ControlerWidgetState extends State<ControlerWidget> {
       onChanged: (color) {
         setState(() {
           selectedColor = color;
+
+          // Extraire les composantes RVB du color
+          int red = color.red; // Valeur de R (0 à 255)
+          int green = color.green; // Valeur de G (0 à 255)
+          int blue = color.blue; // Valeur de B (0 à 255)
+
+          // Mettre à jour les valeurs RVB pour tous les groupes de canaux
+          for (var channels in channelGroups) {
+            if (channels.length >= 3) {
+              context
+                  .read<ControllerModel>()
+                  .updateChannelValue(channels[0]-1, red);
+              context
+                  .read<ControllerModel>()
+                  .updateChannelValue(channels[1]-1, green);
+              context
+                  .read<ControllerModel>()
+                  .updateChannelValue(channels[2]-1, blue);
+            }
+          }
         });
       },
     );
   }
 
-  Widget _buildVerticalSlider() {
-    double value = 50;
+  /// Génère un slider vertical pour contrôler un groupe de canaux
+  Widget _buildVerticalSlider(
+      ControllerModel controller, List<List<int>> channelGroups) {
+    // Calculer la valeur moyenne initiale des canaux
+    double initialValue = channelGroups
+            .expand((channels) => channels.map((ch) => controller.channels[ch]))
+            .reduce((a, b) => a + b)
+            .toDouble() /
+        (channelGroups.expand((e) => e).length); // Diviser par le total réel
 
     return RotatedBox(
       quarterTurns: 3, // Oriente le slider verticalement
       child: Slider(
-        value: value,
+        value: initialValue.clamp(0, 255), // S'assurer que la valeur est valide
         min: 0,
-        max: 100,
+        max: 255, // Plage de 0 à 255
         onChanged: (newValue) {
           setState(() {
-            value = newValue;
+            // Mettre à jour tous les canaux pour chaque groupe
+            for (var channels in channelGroups) {
+              for (var ch in channels) {
+                context
+                    .read<ControllerModel>()
+                    .updateChannelValue(ch-1, newValue.toInt());
+              }
+            }
           });
         },
+      ),
+    );
+  }
+}
+
+class ChannelValuesWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Écouter les changements dans ControllerModel
+    final controller = Provider.of<ControllerModel>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Valeurs des Canaux'),
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal, // Défilement horizontal
+        child: Row(
+          children: List.generate(controller.channels.length, (index) {
+            int channelValue = controller.channels[index];
+
+            return Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Container(
+                width: 50, // Largeur d'un élément
+                height: 50, // Hauteur d'un élément
+                color: Colors.blueGrey,
+                child: Center(
+                  child: Text(
+                    '$channelValue', // Affiche la valeur du canal
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
