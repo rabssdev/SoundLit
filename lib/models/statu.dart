@@ -9,7 +9,7 @@ class Statu {
     required this.channels,
     required this.activated,
     required this.delayAfter,
-  });
+  }); 
 
   Map<String, dynamic> toMap() {
     return {

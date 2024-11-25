@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/models/custom_slider.dart';
 import 'package:provider/provider.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // Import nécessaire pour encoder en JSON
 import '../models/statu.dart';
 import '../database/db_helper.dart';
 import '../models/model.dart';
@@ -12,8 +15,37 @@ import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
 class ControllerModel extends ChangeNotifier {
   List<UsedLight> selectedUsedLights = [];
   List<Model> models = [];
-  List<int> channels =
-      List.generate(512, (_) => 0); // Initialise 512 channels à 0
+  List<int> channels = List.generate(512, (_) => 0); // Initialise 512 channels à 0
+
+  //*********Envoye des données */
+  List<int> dmxChannels = List<int>.filled(512, 0); // Tableau de 512 canaux
+  final String espIp = 'http://192.168.1.112';
+  Timer? _updateTimer;
+
+  @override
+  void dispose() {
+    // Arrêter le timer lorsque l'application est fermée
+    _updateTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _sendDMXValues() async {
+    final url = Uri.parse('$espIp/setDMX');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'channels': channels}),
+      );
+      if (response.statusCode == 200) {
+        print("Values sent successfully: ${response.body}");
+      } else {
+        print("Failed to send DMX values: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error sending DMX values: $e");
+    }
+  }
 
   /// Met à jour les données `selectedUsedLights` et `models`
   void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
@@ -24,17 +56,20 @@ class ControllerModel extends ChangeNotifier {
       models = newModels;
     }
     notifyListeners();
+    _sendDMXValues();
   }
 
   /// Met à jour une valeur spécifique dans le tableau `channels`
-  void updateChannelValue(int index, int value) {
-    if (index >= 0 && index < channels.length) {
+void updateChannelValue(int index, int value) {
+  if (index >= 0 && index < channels.length) {
+    if (channels[index] != value) {
       channels[index] = value;
       notifyListeners();
-    } else {
-      throw RangeError('Index $index is out of bounds for channels');
+      _sendDMXValues(); // Appeler seulement si une modification a eu lieu
     }
   }
+}
+
 
   /// Réinitialise tous les channels à 0
   void resetChannels() {
@@ -435,6 +470,18 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     });
   }
 
+  Timer? _debounceTimer;
+
+  /// Méthode utilitaire pour exécuter une action avec un délai (debounce)
+  void _debounce(Function() action, {Duration duration = const Duration(milliseconds: 200)}) {
+    // Annuler le précédent timer
+    if (_debounceTimer?.isActive ?? false) {
+      _debounceTimer!.cancel();
+    }
+    // Démarrer un nouveau timer
+    _debounceTimer = Timer(duration, action);
+  }
+
   /// Génère les outils en fonction de `selectedUsedLights` et des modèles
   void _generateTools(ControllerModel controller) {
     tools.clear(); // Réinitialise la liste des outils
@@ -457,12 +504,12 @@ class _ControlerWidgetState extends State<ControlerWidget> {
         // Si des canaux valides existent, ajouter à la liste
         if (validChannels.isNotEmpty) {
           if (tools.length > i) {
-            tool_channels[i]
-                .add(validChannels.map((ch) => light.channels[ch-1]).toList());
-          // }
+            tool_channels[i].add(
+                validChannels.map((ch) => light.channels[ch - 1]).toList());
+            // }
           } else {
-            tool_channels
-                .add([validChannels.map((ch) => light.channels[ch-1]).toList()]);
+            tool_channels.add(
+                [validChannels.map((ch) => light.channels[ch - 1]).toList()]);
             tools.add(Tools(
               toolsId: toolId,
               name: toolId == 1 ? 'Color Picker' : 'Slider',
@@ -508,7 +555,7 @@ class _ControlerWidgetState extends State<ControlerWidget> {
                   if (tool.toolsId == 2) _buildColorPicker(channelsGroup),
                   if (tool.toolsId == 1)
                     _buildVerticalSlider(controller, channelsGroup),
-                  Text("Channels: ${channelsGroup.expand((e) => e).toList()}"),
+                  Text(tool.label),
                 ],
               ),
             );
@@ -533,20 +580,16 @@ class _ControlerWidgetState extends State<ControlerWidget> {
           int green = color.green; // Valeur de G (0 à 255)
           int blue = color.blue; // Valeur de B (0 à 255)
 
-          // Mettre à jour les valeurs RVB pour tous les groupes de canaux
-          for (var channels in channelGroups) {
-            if (channels.length >= 3) {
-              context
-                  .read<ControllerModel>()
-                  .updateChannelValue(channels[0]-1, red);
-              context
-                  .read<ControllerModel>()
-                  .updateChannelValue(channels[1]-1, green);
-              context
-                  .read<ControllerModel>()
-                  .updateChannelValue(channels[2]-1, blue);
+          // Utiliser debounce pour limiter les mises à jour
+          _debounce(() {
+            for (var channels in channelGroups) {
+              if (channels.length >= 3) {
+                context.read<ControllerModel>().updateChannelValue(channels[0], red);
+                context.read<ControllerModel>().updateChannelValue(channels[1], green);
+                context.read<ControllerModel>().updateChannelValue(channels[2], blue);
+              }
             }
-          }
+          });
         });
       },
     );
@@ -570,18 +613,25 @@ class _ControlerWidgetState extends State<ControlerWidget> {
         max: 255, // Plage de 0 à 255
         onChanged: (newValue) {
           setState(() {
-            // Mettre à jour tous les canaux pour chaque groupe
-            for (var channels in channelGroups) {
-              for (var ch in channels) {
-                context
-                    .read<ControllerModel>()
-                    .updateChannelValue(ch-1, newValue.toInt());
+            // Utiliser debounce pour limiter les mises à jour
+            _debounce(() {
+              for (var channels in channelGroups) {
+                for (var ch in channels) {
+                  context.read<ControllerModel>().updateChannelValue(ch, newValue.toInt());
+                }
               }
-            }
+            });
           });
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Annuler tout timer actif lorsque le widget est détruit
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 }
 
