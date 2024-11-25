@@ -1,222 +1,169 @@
 import 'package:flutter/material.dart';
-import 'dart:math'; // Pour les couleurs aléatoires
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../database/db_helper.dart'; // Votre helper pour la base de données
+import '../models/statu.dart';
 
-// Modèles de données
-class Statu {
-  final int? statuId;
-  final List<int> channels;
-  final bool activated;
-  final int delayAfter;
+class RunStatusPage extends StatefulWidget {
+  final String espIp = "http://192.168.1.112";
 
-  Statu({
-    this.statuId,
-    required this.channels,
-    required this.activated,
-    required this.delayAfter,
-  });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'statu_id': statuId,
-      'channels': channels.join(','),
-      'activated': activated ? 1 : 0,
-      'delay_after': delayAfter,
-    };
-  }
-
-  factory Statu.fromMap(Map<String, dynamic> map) {
-    return Statu(
-      statuId: map['statu_id'],
-      channels: (map['channels'] as String).split(',').map(int.parse).toList(),
-      activated: map['activated'] == 1,
-      delayAfter: map['delay_after'],
-    );
-  }
-}
-
-class UsedLight {
-  final int id;
-  final int modelId;
-  final List<int> channels;
-
-  UsedLight({required this.id, required this.modelId, required this.channels});
-}
-
-class Model {
-  final int id;
-  final int chNumber;
-
-  Model({required this.id, required this.chNumber});
-}
-
-class ControlPage extends StatefulWidget {
   @override
-  _ControlPageState createState() => _ControlPageState();
+  _RunStatusPageState createState() => _RunStatusPageState();
 }
 
-class _ControlPageState extends State<ControlPage> {
-  // Simulation des données
-  List<Statu> statuses = [
-    Statu(statuId: 1, channels: List.filled(512, 0), activated: true, delayAfter: 0),
-    Statu(statuId: 2, channels: List.filled(512, 0), activated: false, delayAfter: 0),
-  ];
+class _RunStatusPageState extends State<RunStatusPage> {
+  List<Map<String, dynamic>> statusList = [];
+  bool isRunning = false;
+  bool isGridMode = true; // Alterner entre grille et liste
+  bool isLoading = true;
 
-  List<UsedLight> usedLights = [
-    UsedLight(id: 1, modelId: 1, channels: [5, 6, 7]),
-    UsedLight(id: 2, modelId: 1, channels: [12, 13, 14, 15]),
-    UsedLight(id: 3, modelId: 2, channels: [20, 21, 22]),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadStatusesFromDatabase();
+  }
 
-  List<Model> models = [
-    Model(id: 1, chNumber: 7),
-    Model(id: 2, chNumber: 3),
-  ];
-
-  int? selectedStatuId;
-  List<int> selectedUsedLights = [];
+  Future<void> _loadStatusesFromDatabase() async {
+    final dbHelper = DBHelper();
+    final List<Statu> fetchedStatuses = await dbHelper.getAllStatus();
+    setState(() {
+      statusList = fetchedStatuses
+          .map((statu) => {
+                'id': statu.statuId,
+                'channels': statu.channels,
+                'delayAfter': statu.delayAfter,
+              })
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final itemSize = screenWidth / 10; // Diviser la largeur par 10 colonnes
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Row(
-        children: [
-          // Widget de statut (Scroll horizontal)
-          Expanded(
-            flex: 2,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: statuses.length,
-              itemBuilder: (context, index) {
-                final statu = statuses[index];
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      statuses = statuses.map((s) {
-                        return s.copyWith(activated: s.statuId == statu.statuId);
-                      }).toList();
-                      selectedStatuId = statu.statuId;
-                    });
-                  },
-                  child: Container(
-                    margin: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: statu.activated ? Colors.green : Colors.purple,
-                      shape: BoxShape.circle,
-                    ),
-                    width: 50,
-                    height: 50,
-                    child: Center(
-                      child: Text(
-                        "${statu.statuId}",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Widget pour les UsedLights (Scroll vertical)
-          Expanded(
-            flex: 1,
-            child: ListView.builder(
-              itemCount: usedLights.length,
-              itemBuilder: (context, index) {
-                final light = usedLights[index];
-                final model = models.firstWhere((m) => m.id == light.modelId);
-
-                return GestureDetector(
-                  onTap: () {
-                    if (selectedUsedLights.isEmpty ||
-                        selectedUsedLights.every((id) =>
-                            usedLights.firstWhere((l) => l.id == id).modelId ==
-                            light.modelId)) {
-                      setState(() {
-                        if (selectedUsedLights.contains(light.id)) {
-                          selectedUsedLights.remove(light.id);
-                        } else {
-                          selectedUsedLights.add(light.id);
-                        }
-                      });
-                    }
-                  },
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: selectedUsedLights.contains(light.id)
-                          ? Colors.black
-                          : Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      "Light ${light.id}",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Widget de contrôle
-          Expanded(
-            flex: 4,
-            child: selectedUsedLights.isEmpty
-                ? Center(
-                    child: Text(
-                      "Select a Used Light",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: selectedUsedLights.length,
-                    itemBuilder: (context, index) {
-                      final light = usedLights
-                          .firstWhere((l) => l.id == selectedUsedLights[index]);
-
-                      return Column(
-                        children: light.channels.map((channel) {
-                          return Slider(
-                            value: statuses
-                                .firstWhere((s) => s.statuId == selectedStatuId)
-                                .channels[channel]
-                                .toDouble(),
-                            min: 0,
-                            max: 255,
-                            onChanged: (value) {
-                              setState(() {
-                                statuses
-                                    .firstWhere((s) => s.statuId == selectedStatuId)
-                                    .channels[channel] = value.toInt();
-                              });
-                            },
-                          );
-                        }).toList(),
-                      );
-                    },
-                  ),
+      appBar: AppBar(
+        title: const Text("Run Status"),
+        actions: [
+          IconButton(
+            icon: Icon(isGridMode ? Icons.list : Icons.grid_view),
+            onPressed: () {
+              setState(() {
+                isGridMode = !isGridMode;
+              });
+            },
           ),
         ],
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : isGridMode
+              ? GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 10, // Nombre d'éléments par ligne
+                    crossAxisSpacing: 4,
+                    mainAxisSpacing: 4,
+                  ),
+                  itemCount: statusList.length,
+                  itemBuilder: (context, index) {
+                    final item = statusList[index];
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blueAccent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: InkWell(
+                        onTap: () => _editDelayDialog(context, index, item['delayAfter']),
+                        child: Center(
+                          child: Text(
+                            "ID: ${item['id']}\nDelay: ${item['delayAfter']}ms",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : ReorderableListView.builder(
+                  itemCount: statusList.length,
+                  onReorder: _reorderStatuses,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      key: ValueKey(statusList[index]['id']),
+                      title: Text("Statut ${statusList[index]['id']}"),
+                      subtitle: Text(
+                          "Délai: ${statusList[index]['delayAfter']} ms"),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _editDelayDialog(
+                            context, index, statusList[index]['delayAfter']),
+                      ),
+                    );
+                  },
+                ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _toggleRun,
+        child: Icon(isRunning ? Icons.stop : Icons.play_arrow),
+      ),
     );
   }
-}
 
-extension on Statu {
-  Statu copyWith({
-    int? statuId,
-    List<int>? channels,
-    bool? activated,
-    int? delayAfter,
-  }) {
-    return Statu(
-      statuId: statuId ?? this.statuId,
-      channels: channels ?? this.channels,
-      activated: activated ?? this.activated,
-      delayAfter: delayAfter ?? this.delayAfter,
+  void _toggleRun() {
+    setState(() {
+      isRunning = !isRunning;
+    });
+  }
+
+  void _reorderStatuses(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final item = statusList.removeAt(oldIndex);
+      statusList.insert(newIndex, item);
+    });
+  }
+
+  Future<void> _editDelayDialog(
+      BuildContext context, int index, int currentDelay) async {
+    TextEditingController controller =
+        TextEditingController(text: currentDelay.toString());
+
+    final newDelay = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Modifier le délai"),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: "Délai en ms"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Annuler"),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = int.tryParse(controller.text);
+                Navigator.of(context).pop(value);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
     );
+
+    if (newDelay != null) {
+      _updateDelay(index, newDelay);
+    }
+  }
+
+  void _updateDelay(int index, int newDelay) {
+    setState(() {
+      statusList[index]['delayAfter'] = newDelay;
+    });
   }
 }

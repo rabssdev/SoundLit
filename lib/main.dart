@@ -16,6 +16,7 @@ import 'pages/Show_models.dart';
 import 'pages/Add_used_light.dart';
 import 'pages/Show_used_light.dart';
 // import 'pages/TEST.dart';
+import 'pages/RunStatusPage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,11 +27,11 @@ void main() {
     DeviceOrientation.landscapeRight,
   ]).then((_) {
     runApp(
-    ChangeNotifierProvider(
-      create: (context) => ControllerModel(),
-      child: MyApp(),
-    ),
-  );
+      ChangeNotifierProvider(
+        create: (context) => ControllerModel(),
+        child: MyApp(),
+      ),
+    );
   });
 }
 
@@ -55,6 +56,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  final String espIp = 'http://192.168.1.112';
 
   // Liste des pages associées aux index de navigation
   final List<Widget> _pages = [
@@ -70,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ModelsScreen(),
     AddUsedLightPage(),
     UsedLightsPage(),
+    RunStatusPage(),
   ];
 
   // Méthode de changement de page
@@ -156,6 +159,11 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.home),
               title: Text('Show used Light'),
               onTap: () => _onItemTapped(11),
+            ),
+            ListTile(
+              leading: Icon(Icons.run_circle),
+              title: Text('Run statu'),
+              onTap: () => _onItemTapped(12),
             ),
           ],
         ),

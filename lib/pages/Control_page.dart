@@ -17,14 +17,12 @@ class ControllerModel extends ChangeNotifier {
   List<Model> models = [];
   List<int> channels = List.generate(512, (_) => 0); // Initialise 512 channels à 0
 
-  //*********Envoye des données */
   List<int> dmxChannels = List<int>.filled(512, 0); // Tableau de 512 canaux
   final String espIp = 'http://192.168.1.112';
   Timer? _updateTimer;
 
   @override
   void dispose() {
-    // Arrêter le timer lorsque l'application est fermée
     _updateTimer?.cancel();
     super.dispose();
   }
@@ -47,7 +45,6 @@ class ControllerModel extends ChangeNotifier {
     }
   }
 
-  /// Met à jour les données `selectedUsedLights` et `models`
   void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
     if (newUsedLights != null) {
       selectedUsedLights = newUsedLights;
@@ -59,24 +56,28 @@ class ControllerModel extends ChangeNotifier {
     _sendDMXValues();
   }
 
-  /// Met à jour une valeur spécifique dans le tableau `channels`
-void updateChannelValue(int index, int value) {
-  if (index >= 0 && index < channels.length) {
-    if (channels[index] != value) {
-      channels[index] = value;
-      notifyListeners();
-      _sendDMXValues(); // Appeler seulement si une modification a eu lieu
+  void updateChannelValue(int index, int value) {
+    if (index >= 0 && index < channels.length) {
+      if (channels[index] != value) {
+        channels[index] = value;
+        notifyListeners();
+        _sendDMXValues();
+      }
     }
   }
-}
 
-
-  /// Réinitialise tous les channels à 0
   void resetChannels() {
     channels.fillRange(0, channels.length, 0);
     notifyListeners();
   }
+
+  /// Applique les valeurs actuelles des `channels` à un statut donné.
+  Future<void> applyChannelsToStatu(Statu statu) async {
+    statu.channels = List.from(channels);
+    notifyListeners();
+  }
 }
+
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -122,8 +123,8 @@ class _SliderScreenState extends State<SliderScreen> {
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu
-          // child: HorizontalStatuManager(),
-          child: ChannelValuesWidget(),
+          child: HorizontalStatuManager(),
+          // child: ChannelValuesWidget(),
         ),
         Expanded(
           child: Row(
@@ -187,6 +188,8 @@ class _ControlWidgetState extends State<ControlWidget> {
   }
 }
 
+
+
 class HorizontalStatuManager extends StatefulWidget {
   @override
   _HorizontalStatuManagerState createState() => _HorizontalStatuManagerState();
@@ -202,7 +205,6 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
     _fetchStatus();
   }
 
-  /// Récupère tous les statuts de la base de données.
   Future<void> _fetchStatus() async {
     final status = await _dbHelper.getAllStatus();
     setState(() {
@@ -210,7 +212,6 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
     });
   }
 
-  /// Ajoute un nouveau statut avec les paramètres par défaut.
   Future<void> _addStatu() async {
     final newStatu = Statu(
       channels: List.filled(512, 0),
@@ -222,7 +223,6 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
     _fetchStatus();
   }
 
-  /// Supprime le dernier statut dans la liste.
   Future<void> _removeLastStatu() async {
     if (_status.isNotEmpty) {
       final lastStatuId = _status.last.statuId!;
@@ -231,13 +231,27 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
     }
   }
 
-  /// Sélectionne un statut spécifique et désélectionne les autres.
+  /// Sélectionne un statut et met à jour ses channels avec ceux du Provider.
   Future<void> _selectStatu(int selectedIndex) async {
+    final controller = Provider.of<ControllerModel>(context, listen: false);
+
     for (int i = 0; i < _status.length; i++) {
-      _status[i].activated = i == selectedIndex;
-      await _dbHelper.updateStatu(_status[i]);
+      final statu = _status[i];
+      if (i == selectedIndex) {
+        statu.activated = true;
+
+        // Met à jour les channels du statut sélectionné
+        await controller.applyChannelsToStatu(statu);
+
+        // Sauvegarde dans la base de données
+        statu.channels = List.from(controller.channels);
+        await _dbHelper.updateStatu(statu);
+      } else {
+        statu.activated = false;
+        await _dbHelper.updateStatu(statu);
+      }
     }
-    setState(() {});
+    _fetchStatus(); // Recharge les données
   }
 
   @override
@@ -303,6 +317,7 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
     );
   }
 }
+
 
 class UsedLightListScreen extends StatefulWidget {
   @override
