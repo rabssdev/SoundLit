@@ -109,8 +109,7 @@ class _RunStatusPageState extends State<RunStatusPage> {
   }
 
   /// Dialogue pour saisir un nouveau délai
-  Future<int?> _showDelayInputDialog(
-      BuildContext context, int currentDelay) async {
+  Future<int?> _showDelayInputDialog(BuildContext context, int currentDelay) async {
     TextEditingController controller =
         TextEditingController(text: currentDelay.toString());
     return showDialog<int>(
@@ -141,9 +140,6 @@ class _RunStatusPageState extends State<RunStatusPage> {
     );
   }
 
-  // Ajout d'une variable pour suivre le statut sélectionné
-  int? selectedStatusId;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,33 +163,21 @@ class _RunStatusPageState extends State<RunStatusPage> {
                         });
                       },
                       itemBuilder: (context, index) {
-                        final status = statusList[index];
                         return ListTile(
-                          key: ValueKey(status['id']),
+                          key: ValueKey(statusList[index]['id']),
                           leading: CircleWidget(
-                            number: status['id'],
+                            number: statusList[index]['id'],
                             isDragging: false,
                           ),
                           title: Text(
-                            "Delay: ${status['delayAfter']} ms",
+                            "Delay: ${statusList[index]['delayAfter']} ms",
                             style: const TextStyle(fontSize: 16),
                           ),
-                          tileColor: selectedStatusId == status['id']
-                              ? Colors.blueAccent.withOpacity(0.2)
-                              : null,
-                          onTap: () async {
-                            if (!isRunning) {
-                              setState(() {
-                                selectedStatusId = status['id'];
-                              });
-                              await _sendDMXValues(status['channels']);
-                            }
-                          },
                           trailing: IconButton(
                             icon: const Icon(Icons.edit),
                             onPressed: () async {
                               final newDelay = await _showDelayInputDialog(
-                                  context, status['delayAfter']);
+                                  context, statusList[index]['delayAfter']);
                               if (newDelay != null) {
                                 _updateDelay(index, newDelay);
                               }
@@ -208,8 +192,8 @@ class _RunStatusPageState extends State<RunStatusPage> {
                     onPressed: _toggleRun,
                     child: Text(isRunning ? "Arrêter" : "Démarrer"),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 16),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     ),
                   ),
                 ],

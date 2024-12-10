@@ -137,10 +137,18 @@ class DBHelper {
   }
 
 //*********************************************************************CRUD STATU */
-  Future<int> insertStatu(Statu statu) async {
-    final db = await database;
-    return await db.insert('Statu', statu.toMap());
-  }
+Future<int> insertStatu(Statu statu) async {
+  final db = await database;
+  
+  // Récupère tous les statuts pour calculer le prochain ID
+  final statusList = await getAllStatus();
+  int newId = statusList.isEmpty ? 1 : statusList.length + 1;
+  
+  statu.statuId = newId; // Assigne l'ID calculé
+
+  return await db.insert('Statu', statu.toMap());
+}
+
 
   Future<List<Statu>> getAllStatus() async {
     final db = await database;
@@ -166,6 +174,18 @@ class DBHelper {
       whereArgs: [statuId],
     );
   }
+
+  // Méthode pour mettre à jour le délai d'un statut
+Future<int> updateStatuDelay(int statuId, int newDelay) async {
+  final db = await database;
+  return await db.update(
+    'Statu',
+    {'delay_after': newDelay}, // Met à jour le champ 'delay_after'
+    where: 'statu_id = ?', // Condition pour cibler le statut par son ID
+    whereArgs: [statuId], // L'ID du statut à mettre à jour
+  );
+}
+
 
   // CRUD pour Tools
 

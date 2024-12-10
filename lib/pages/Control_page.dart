@@ -108,6 +108,7 @@ class _SliderScreenState extends State<SliderScreen> {
     super.initState();
     _fetchInitialData();
   }
+  
 
   Future<void> _fetchInitialData() async {
     // Exemple pour charger des données depuis la DBHelper
