@@ -41,7 +41,7 @@ class _AddLightPageState extends State<AddLightPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Lights')),
+      appBar: AppBar(title: const Text('Lights')),
       body: ListView.builder(
         itemCount: lights.length,
         itemBuilder: (context, index) {
@@ -66,7 +66,7 @@ class _AddLightPageState extends State<AddLightPage> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
                     await deleteLight(light.number);
                   },
@@ -87,7 +87,7 @@ class _AddLightPageState extends State<AddLightPage> {
             ),
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

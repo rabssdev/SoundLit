@@ -5,6 +5,8 @@ import '../models/tools.dart'; // Remplacez par le bon chemin vers Tools
 import 'dart:convert'; // Importer pour encoder en JSON
 
 class ModelsScreen extends StatefulWidget {
+  const ModelsScreen({super.key});
+
   @override
   _ModelsScreenState createState() => _ModelsScreenState();
 }
@@ -39,10 +41,10 @@ class _ModelsScreenState extends State<ModelsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Models and Channels'),
+        title: const Text('Models and Channels'),
       ),
       body: models.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               itemCount: models.length,
               itemBuilder: (context, index) {
@@ -63,7 +65,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
                               future: DBHelper().getToolById(chTool['tool_id']),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
+                                  return const CircularProgressIndicator();
                                 }
                                 if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
@@ -80,9 +82,9 @@ class _ModelsScreenState extends State<ModelsScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _printModelsJson, // Appel de la fonction pour afficher le JSON
+        onPressed: _printModelsJson,
+        tooltip: 'Afficher JSON des modèles', // Appel de la fonction pour afficher le JSON
         child: Icon(Icons.print),
-        tooltip: 'Afficher JSON des modèles',
       ),
     );
   }

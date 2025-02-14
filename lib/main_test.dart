@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,6 +17,8 @@ class MyApp extends StatelessWidget {
 }
 
 class DMXControllerPage extends StatefulWidget {
+  const DMXControllerPage({super.key});
+
   @override
   _DMXControllerPageState createState() => _DMXControllerPageState();
 }
@@ -28,7 +32,7 @@ class _DMXControllerPageState extends State<DMXControllerPage> {
   void initState() {
     super.initState();
     // Initialiser le timer pour envoyer les valeurs toutes les 200 ms
-    _updateTimer = Timer.periodic(Duration(milliseconds: 200), (timer) {
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
       _sendDMXValues();
     });
   }
@@ -61,7 +65,7 @@ class _DMXControllerPageState extends State<DMXControllerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("DMX Controller")),
+      appBar: AppBar(title: const Text("DMX Controller")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView.builder(

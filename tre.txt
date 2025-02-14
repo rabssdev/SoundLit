@@ -1,0 +1,90 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import '../models/statu.dart';
+import '../models/used_light.dart';
+import '../models/model.dart';
+import '../models/tools.dart';
+
+class ControllerModel extends ChangeNotifier {
+  List<UsedLight> selectedUsedLights = [];
+  List<Model> models = [];
+  List<int> channels = List.generate(512, (_) => 0);
+  WebSocketChannel? _channel;
+  Timer? _updateTimer;
+
+  ControllerModel() {
+    _connectWebSocket();
+  }
+
+  void _connectWebSocket() {
+    _channel = IOWebSocketChannel.connect('ws://localhost:3000');
+    _channel!.stream.listen(
+      (data) {
+        try {
+          List<int> receivedDMX = List<int>.from(jsonDecode(data));
+          if (receivedDMX.length == 512) {
+            channels = receivedDMX;
+            notifyListeners();
+          }
+        } catch (e) {
+          print("Erreur lors de la réception des données WebSocket: $e");
+        }
+      },
+      onError: (error) => print("Erreur WebSocket: $error"),
+      onDone: () => print("Connexion WebSocket fermée"),
+    );
+  }
+
+  @override
+  void dispose() {
+    _updateTimer?.cancel();
+    _channel?.sink.close();
+    super.dispose();
+  }
+
+  void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
+    if (newUsedLights != null) {
+      selectedUsedLights = newUsedLights;
+    }
+    if (newModels != null) {
+      models = newModels;
+    }
+    notifyListeners();
+    _sendDMXValues();
+  }
+
+  void updateChannelValue(int index, int value) {
+    if (index >= 0 && index < channels.length) {
+      if (channels[index] != value) {
+        channels[index] = value;
+        notifyListeners();
+        _sendDMXValues();
+      }
+    }
+  }
+
+  void resetChannels() {
+    channels.fillRange(0, channels.length, 0);
+    notifyListeners();
+    _sendDMXValues();
+  }
+
+  void _sendDMXValues() {
+    if (_channel != null && _channel!.sink !§/
+        _channel!.sink.add(jsonEncode(channels));
+      } catch (e) {
+        print("Erreur d'envoi des données WebSocket: $e");
+      }
+    }
+  }
+
+  Future<void> applyChannelsToStatu(Statu statu) async {
+    statu.channels = List.from(channels);
+    notifyListeners();
+  }
+}
+

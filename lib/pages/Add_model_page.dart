@@ -5,6 +5,8 @@ import '../models/model.dart';
 import '../database/db_helper.dart';
 
 class AddModelPage extends StatefulWidget {
+  const AddModelPage({super.key});
+
   @override
   _AddModelPageState createState() => _AddModelPageState();
 }
@@ -58,7 +60,7 @@ class _AddModelPageState extends State<AddModelPage> {
   Future<void> _saveModel() async {
     if (_refController.text.isEmpty || chNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Veuillez remplir tous les champs.')),
+        const SnackBar(content: Text('Veuillez remplir tous les champs.')),
       );
       return;
     }
@@ -82,7 +84,7 @@ class _AddModelPageState extends State<AddModelPage> {
       showSuccessMessage = true;
     });
 
-    Timer(Duration(seconds: 1), () {
+    Timer(const Duration(seconds: 1), () {
       setState(() {
         showSuccessMessage = false;
         _refController.clear();
@@ -98,12 +100,12 @@ class _AddModelPageState extends State<AddModelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajouter un modèle'),
+        title: const Text('Ajouter un modèle'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: showSuccessMessage
-            ? Center(
+            ? const Center(
                 child: Text(
                   'Succès',
                   style: TextStyle(color: Colors.green, fontSize: 24),
@@ -118,17 +120,17 @@ class _AddModelPageState extends State<AddModelPage> {
                         Expanded(
                           child: TextField(
                             controller: _refController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Référence du modèle',
                             ),
                           ),
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: TextField(
                             controller: _chNumberController,
                             keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Nombre de canaux',
                             ),
                             onChanged: (value) {
@@ -140,12 +142,12 @@ class _AddModelPageState extends State<AddModelPage> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     if (chNumber != null)
                       SizedBox(
                         height: 150,
                         child: GridView.builder(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 10,
                             childAspectRatio: 1.0,
                             crossAxisSpacing: 5.0,
@@ -195,13 +197,13 @@ class _AddModelPageState extends State<AddModelPage> {
                           },
                         ),
                       ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
                           child: DropdownButton<Tools>(
                             value: selectedTool,
-                            hint: Text('Sélectionnez un outil'),
+                            hint: const Text('Sélectionnez un outil'),
                             items: tools.map((tool) {
                               return DropdownMenuItem<Tools>(
                                 value: tool,
@@ -215,18 +217,18 @@ class _AddModelPageState extends State<AddModelPage> {
                             },
                           ),
                         ),
-                        SizedBox(width: 16),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: TextField(
                             controller: _labelController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Label',
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -236,7 +238,7 @@ class _AddModelPageState extends State<AddModelPage> {
                                       (selectedTool?.chUsed ?? 0)
                               ? null
                               : _validateToolSelection,
-                          child: Text('Valider'),
+                          child: const Text('Valider'),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -246,15 +248,15 @@ class _AddModelPageState extends State<AddModelPage> {
                               selectedTool = null;
                             });
                           },
-                          child: Text('Retour'),
+                          child: const Text('Retour'),
                         ),
                       ],
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
                         onPressed: _saveModel,
-                        child: Text('Enregistrer le modèle'),
+                        child: const Text('Enregistrer le modèle'),
                       ),
                     ),
                   ],

@@ -36,13 +36,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SoundLit',
       theme: ThemeData(
         primarySwatch: Colors.brown,
-        scaffoldBackgroundColor: Color(0xFF140D16),
+        scaffoldBackgroundColor: const Color(0xFF140D16),
       ),
       home: MyHomePage(),
     );
@@ -50,6 +52,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -60,15 +64,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Liste des pages associées aux index de navigation
   final List<Widget> _pages = [
-    WelcomePage(),
-    ControlPage(),
+    const WelcomePage(),
+    const ControlPage(),
     RunPage(),
-    AddLightPage(),
+    const AddLightPage(),
     ToolsPage(),
     DatabaseResetPage(),
     AddModelPage(),
     UsedLightPage(),
-    StatuPage(),
+    const StatuPage(),
     ModelsScreen(),
     AddUsedLightPage(),
     UsedLightsPage(),
@@ -91,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Color(0xFF1E1C1C),
               ),
               child: Image.asset(
@@ -101,68 +105,68 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Welcome'),
+              leading: const Icon(Icons.home),
+              title: const Text('Welcome'),
               onTap: () => _onItemTapped(0),
             ),
             ListTile(
-              leading: Icon(Icons.control_camera),
-              title: Text('Control'),
+              leading: const Icon(Icons.control_camera),
+              title: const Text('Control'),
               onTap: () => _onItemTapped(1),
             ),
             ListTile(
-              leading: Icon(Icons.run_circle),
-              title: Text('Run'),
+              leading: const Icon(Icons.run_circle),
+              title: const Text('Run'),
               onTap: () => _onItemTapped(2),
             ),
             ListTile(
-              leading: Icon(Icons.lightbulb),
-              title: Text('Add Light'),
+              leading: const Icon(Icons.lightbulb),
+              title: const Text('Add Light'),
               onTap: () => _onItemTapped(3),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Tools'),
+              leading: const Icon(Icons.home),
+              title: const Text('Tools'),
               onTap: () => _onItemTapped(4),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Delete database'),
+              leading: const Icon(Icons.home),
+              title: const Text('Delete database'),
               onTap: () => _onItemTapped(5),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Add model page'),
+              leading: const Icon(Icons.home),
+              title: const Text('Add model page'),
               onTap: () => _onItemTapped(6),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Used light Crud'),
+              leading: const Icon(Icons.home),
+              title: const Text('Used light Crud'),
               onTap: () => _onItemTapped(7),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('State Crud'),
+              leading: const Icon(Icons.home),
+              title: const Text('State Crud'),
               onTap: () => _onItemTapped(8),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Show models'),
+              leading: const Icon(Icons.home),
+              title: const Text('Show models'),
               onTap: () => _onItemTapped(9),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Add used Light'),
+              leading: const Icon(Icons.home),
+              title: const Text('Add used Light'),
               onTap: () => _onItemTapped(10),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Show used Light'),
+              leading: const Icon(Icons.home),
+              title: const Text('Show used Light'),
               onTap: () => _onItemTapped(11),
             ),
             ListTile(
-              leading: Icon(Icons.run_circle),
-              title: Text('Run statu'),
+              leading: const Icon(Icons.run_circle),
+              title: const Text('Run statu'),
               onTap: () => _onItemTapped(12),
             ),
           ],

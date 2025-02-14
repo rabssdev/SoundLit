@@ -39,7 +39,7 @@ class _AddLightPageState extends State<AddLightPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Text("HELLO");
+    return const Text("HELLO");
     // return Scaffold(
     //   appBar: AppBar(title: Text('Lights')),
     //   body: ListView.builder(

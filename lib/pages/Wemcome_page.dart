@@ -16,7 +16,7 @@ class WelcomePage extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Cercles avec Activation'),
+          title: const Text('Cercles avec Activation'),
         ),
         body: CircleScroller(totalCircles: 10,visibleCircles: 5,circleDiameter: 20),
       ),
@@ -27,6 +27,8 @@ class WelcomePage extends StatelessWidget {
 //****************************COLOR PICKER */
 
 class ColorPickerPage extends StatefulWidget {
+  const ColorPickerPage({super.key});
+
   @override
   _ColorPickerPageState createState() => _ColorPickerPageState();
 }
@@ -77,7 +79,7 @@ class CircleScroller extends StatefulWidget {
   final int visibleCircles;
   final double circleDiameter;
 
-  CircleScroller({
+  const CircleScroller({super.key, 
     required this.totalCircles,
     required this.visibleCircles,
     required this.circleDiameter,
@@ -121,7 +123,7 @@ class _CircleScrollerState extends State<CircleScroller> {
 
   @override
   Widget build(BuildContext context) {
-    final double circleSpacing = 10.0;
+    const double circleSpacing = 10.0;
 
     return Center(
       child: SizedBox(
@@ -151,7 +153,7 @@ class _CircleScrollerState extends State<CircleScroller> {
                 child: Center(
                   child: Text(
                     '${circle.numero}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -167,6 +169,8 @@ class _CircleScrollerState extends State<CircleScroller> {
 }
 
 class ModelListPage extends StatefulWidget {
+  const ModelListPage({super.key});
+
   @override
   _ModelListPageState createState() => _ModelListPageState();
 }
@@ -192,10 +196,10 @@ class _ModelListPageState extends State<ModelListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Liste des Modèles'),
+        title: const Text('Liste des Modèles'),
       ),
       body: _models.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'Aucun modèle trouvé.',
                 style: TextStyle(fontSize: 18),
@@ -206,11 +210,11 @@ class _ModelListPageState extends State<ModelListPage> {
               itemBuilder: (context, index) {
                 final model = _models[index];
                 return Card(
-                  margin: EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(10),
                   child: ListTile(
                     title: Text(
                       'Modèle: ${model.ref}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +223,7 @@ class _ModelListPageState extends State<ModelListPage> {
                         Text('Nombre de canaux: ${model.chNumber}'),
                         Text(
                           'Outils: ${jsonEncode(model.chTool)}',
-                          style: TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -232,8 +236,8 @@ class _ModelListPageState extends State<ModelListPage> {
           // Action pour ajouter un modèle ou recharger la liste
           _fetchModels();
         },
-        child: Icon(Icons.refresh),
         tooltip: 'Rafraîchir la liste',
+        child: Icon(Icons.refresh),
       ),
     );
   }
@@ -251,6 +255,8 @@ class _ModelListPageState extends State<ModelListPage> {
 
 
 class StatuListPage extends StatefulWidget {
+  const StatuListPage({super.key});
+
   @override
   _StatuListPageState createState() => _StatuListPageState();
 }
@@ -285,16 +291,16 @@ class _StatuListPageState extends State<StatuListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Liste des Statuts"),
+        title: const Text("Liste des Statuts"),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _fetchStatus, // Rafraîchir la liste des statuts
           ),
         ],
       ),
       body: _status.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 "Aucun statut disponible.",
                 style: TextStyle(fontSize: 18, color: Colors.grey),
@@ -305,7 +311,7 @@ class _StatuListPageState extends State<StatuListPage> {
               itemBuilder: (context, index) {
                 final statu = _status[index];
                 return Card(
-                  margin: EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(10),
                   elevation: 4,
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
@@ -314,40 +320,40 @@ class _StatuListPageState extends State<StatuListPage> {
                       children: [
                         Text(
                           "Statut #${statu.statuId ?? '-'}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           "Activé : ${statu.activated ? 'Oui' : 'Non'}",
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           "Délai après : ${statu.delayAfter} ms",
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
-                        SizedBox(height: 8),
-                        Text(
+                        const SizedBox(height: 8),
+                        const Text(
                           "Canaux :",
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         // Affiche les valeurs des channels dans un conteneur défilant horizontalement
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Text(
                             statu.channels.join(", "),
-                            style: TextStyle(fontSize: 14, color: Colors.black),
+                            style: const TextStyle(fontSize: 14, color: Colors.black),
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => _updateStatuChannels(statu),
-                          child: Text("Mettre à jour avec les valeurs actuelles"),
+                          child: const Text("Mettre à jour avec les valeurs actuelles"),
                         ),
                       ],
                     ),

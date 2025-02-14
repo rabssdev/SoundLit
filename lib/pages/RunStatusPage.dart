@@ -8,7 +8,7 @@ import '../models/statu.dart'; // Le modèle de votre entité Statu
 class RunStatusPage extends StatefulWidget {
   final String espIp = "http://192.168.1.112";
 
-  RunStatusPage();
+  const RunStatusPage({super.key});
 
   @override
   _RunStatusPageState createState() => _RunStatusPageState();
@@ -190,11 +190,11 @@ class _RunStatusPageState extends State<RunStatusPage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _toggleRun,
-                    child: Text(isRunning ? "Arrêter" : "Démarrer"),
                     style: ElevatedButton.styleFrom(
                       padding:
                           const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     ),
+                    child: Text(isRunning ? "Arrêter" : "Démarrer"),
                   ),
                 ],
               ),
@@ -207,7 +207,7 @@ class CircleWidget extends StatelessWidget {
   final int number;
   final bool isDragging;
 
-  const CircleWidget({
+  const CircleWidget({super.key, 
     required this.number,
     required this.isDragging,
   });
@@ -222,10 +222,10 @@ class CircleWidget extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: isDragging
             ? [
-                BoxShadow(
+                const BoxShadow(
                   color: Colors.black26,
                   blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  offset: Offset(0, 4),
                 ),
               ]
             : [],

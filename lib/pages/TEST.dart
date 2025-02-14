@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../database/db_helper.dart'; // Votre helper pour la base de données
 import '../models/statu.dart';
 
 class RunStatusPage extends StatefulWidget {
   final String espIp = "http://192.168.1.112";
+
+  const RunStatusPage({super.key});
 
   @override
   _RunStatusPageState createState() => _RunStatusPageState();

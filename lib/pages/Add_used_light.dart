@@ -5,6 +5,8 @@ import '../database/db_helper.dart';
 import 'package:collection/collection.dart';
 
 class AddUsedLightPage extends StatefulWidget {
+  const AddUsedLightPage({super.key});
+
   @override
   _AddUsedLightPageState createState() => _AddUsedLightPageState();
 }
@@ -114,7 +116,7 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
   }
 
   Future<void> saveUsedLights() async {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text("Enregistrement des lumières utilisées effectué."),
     ));
   }
@@ -123,11 +125,11 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add Used Light"),
+        title: const Text("Add Used Light"),
         actions: [
           TextButton(
             onPressed: saveUsedLights,
-            child: Text("Save", style: TextStyle(color: Colors.white)),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
           )
         ],
       ),
@@ -160,7 +162,7 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
                 }
 
                 return Card(
-                  margin: EdgeInsets.all(8.0),
+                  margin: const EdgeInsets.all(8.0),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -171,18 +173,18 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
                           children: [
                             Text(
                               "BEGIN CHANNEL: $beginChannel",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               "END CHANNEL: $endChannel",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
                         DropdownButton<Model>(
                           value: models.firstWhereOrNull(
                               (model) => model.modelId == usedLight.modelId),
-                          hint: Text("Select Model"),
+                          hint: const Text("Select Model"),
                           items: models.map((model) {
                             return DropdownMenuItem<Model>(
                               value: model,
@@ -197,7 +199,7 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
                         ),
                         IconButton(
                           onPressed: () => deleteUsedLight(index),
-                          icon: Icon(Icons.delete, color: Colors.red),
+                          icon: const Icon(Icons.delete, color: Colors.red),
                         ),
                       ],
                     ),
@@ -211,7 +213,7 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
             children: [
               IconButton(
                 onPressed: addUsedLight,
-                icon: Icon(Icons.add_circle, color: Colors.green, size: 40),
+                icon: const Icon(Icons.add_circle, color: Colors.green, size: 40),
               ),
             ],
           ),

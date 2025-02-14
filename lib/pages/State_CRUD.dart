@@ -13,14 +13,14 @@ class _StatuPageState extends State<StatuPage> {
 final DBHelper _dbHelper = DBHelper();
 
   List<Statu> _status = [];
-  List<int> _availableChannels = [
+  final List<int> _availableChannels = [
     1,
     2,
     3,
     4,
     5
   ]; // Exemple de canaux disponibles
-  List<int> _selectedChannels = [];
+  final List<int> _selectedChannels = [];
   bool _activated = false;
   int _delayAfter = 0;
 
@@ -59,7 +59,7 @@ final DBHelper _dbHelper = DBHelper();
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gestion des Status'),
+        title: const Text('Gestion des Status'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -74,14 +74,14 @@ final DBHelper _dbHelper = DBHelper();
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Ajouter un Statu',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Liste déroulante pour sélectionner les canaux
-                      Text('Sélectionnez les canaux :'),
+                      const Text('Sélectionnez les canaux :'),
                       Wrap(
                         spacing: 8.0,
                         children: _availableChannels.map((channel) {
@@ -102,7 +102,7 @@ final DBHelper _dbHelper = DBHelper();
                           );
                         }).toList(),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Checkbox pour l'état activé
                       Row(
                         children: [
@@ -114,13 +114,13 @@ final DBHelper _dbHelper = DBHelper();
                               });
                             },
                           ),
-                          Text('Activé'),
+                          const Text('Activé'),
                         ],
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Champ pour définir le délai
                       TextField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Délai après (en secondes)',
                           border: OutlineInputBorder(),
                         ),
@@ -129,22 +129,22 @@ final DBHelper _dbHelper = DBHelper();
                           _delayAfter = int.tryParse(value) ?? 0;
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Bouton pour ajouter
                       ElevatedButton(
                         onPressed: _addStatu,
-                        child: Text('Ajouter'),
+                        child: const Text('Ajouter'),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               // Liste des Status
               _status.isEmpty
-                  ? Center(child: Text('Aucun Statu disponible.'))
+                  ? const Center(child: Text('Aucun Statu disponible.'))
                   : ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount: _status.length,
                       itemBuilder: (context, index) {
@@ -164,7 +164,7 @@ final DBHelper _dbHelper = DBHelper();
                               ],
                             ),
                             trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _deleteStatu(statu.statuId!),
                             ),
                           ),

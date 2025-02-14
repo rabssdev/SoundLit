@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../models/tools.dart';
 
 class AddModelPage extends StatefulWidget {
+  const AddModelPage({super.key});
+
   @override
   _AddModelPageState createState() => _AddModelPageState();
 }
@@ -56,7 +58,7 @@ class _AddModelPageState extends State<AddModelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Ajouter un Modèle"),
+        title: const Text("Ajouter un Modèle"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -65,9 +67,9 @@ class _AddModelPageState extends State<AddModelPage> {
           children: [
             ElevatedButton(
               onPressed: addModel,
-              child: Text("Ajouter un modèle"),
+              child: const Text("Ajouter un modèle"),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: models.length,
@@ -88,7 +90,7 @@ class _AddModelPageState extends State<AddModelPage> {
                             })),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Text("Chargement des outils...");
+                                return const Text("Chargement des outils...");
                               }
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

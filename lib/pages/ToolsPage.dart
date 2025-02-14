@@ -3,6 +3,8 @@ import '../database/db_helper.dart';
 import '../models/tools.dart';
 
 class ToolsPage extends StatefulWidget {
+  const ToolsPage({super.key});
+
   @override
   _ToolsPageState createState() => _ToolsPageState();
 }
@@ -65,7 +67,7 @@ class _ToolsPageState extends State<ToolsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tools CRUD Test'),
+        title: const Text('Tools CRUD Test'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -74,23 +76,23 @@ class _ToolsPageState extends State<ToolsPage> {
             // Formulaire pour ajouter un outil
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Tool Name'),
+              decoration: const InputDecoration(labelText: 'Tool Name'),
             ),
             TextField(
               controller: _labelController,
-              decoration: InputDecoration(labelText: 'Tool label'),
+              decoration: const InputDecoration(labelText: 'Tool label'),
             ),
             TextField(
               controller: _chUsedController,
-              decoration: InputDecoration(labelText: 'Channels Used'),
+              decoration: const InputDecoration(labelText: 'Channels Used'),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _addTool,
-              child: Text('Add Tool'),
+              child: const Text('Add Tool'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Liste des outils
             Expanded(
               child: ListView.builder(
@@ -98,7 +100,7 @@ class _ToolsPageState extends State<ToolsPage> {
                 itemBuilder: (context, index) {
                   final tool = _toolsList[index];
                   return Card(
-                    margin: EdgeInsets.symmetric(vertical: 5),
+                    margin: const EdgeInsets.symmetric(vertical: 5),
                     child: ListTile(
                       title: Text(tool.name),
                       subtitle: Text('Channels Used: ${tool.chUsed}'),
@@ -106,11 +108,11 @@ class _ToolsPageState extends State<ToolsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit, color: Colors.blue),
+                            icon: const Icon(Icons.edit, color: Colors.blue),
                             onPressed: () => _updateTool(tool),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deleteTool(tool.toolsId!),
                           ),
                         ],

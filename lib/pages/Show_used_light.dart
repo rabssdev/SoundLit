@@ -4,6 +4,8 @@ import '../models/used_light.dart'; // Modèle représentant la structure des us
 import '../database/db_helper.dart'; // Votre helper de base de données pour accéder aux données
 
 class UsedLightsPage extends StatefulWidget {
+  const UsedLightsPage({super.key});
+
   @override
   _UsedLightsPageState createState() => _UsedLightsPageState();
 }
@@ -38,10 +40,10 @@ class _UsedLightsPageState extends State<UsedLightsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Used Lights"),
+        title: const Text("Used Lights"),
       ),
       body: models.isEmpty || usedLights.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Affiche un loader pendant le chargement des données
+          ? const Center(child: CircularProgressIndicator()) // Affiche un loader pendant le chargement des données
           : ListView.builder(
               itemCount: usedLights.length,
               itemBuilder: (context, index) {
@@ -59,7 +61,7 @@ class _UsedLightsPageState extends State<UsedLightsPage> {
                 );
 
                 return Card(
-                  margin: EdgeInsets.all(8.0),
+                  margin: const EdgeInsets.all(8.0),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
@@ -67,15 +69,15 @@ class _UsedLightsPageState extends State<UsedLightsPage> {
                       children: [
                         Text(
                           "Used Light ID: ${usedLight.usedLightId}",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           "Model: ${associatedModel.ref}", // Affiche le modèle associé
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           "Channels: ${usedLight.channels.join(', ')}", // Affiche la liste des canaux
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
                         ),
                       ],
                     ),

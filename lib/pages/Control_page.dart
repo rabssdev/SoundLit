@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'dart:convert'; // Import nécessaire pour encoder en JSON
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/models/custom_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // Import nécessaire pour encoder en JSON
 import '../models/statu.dart';
 import '../database/db_helper.dart';
 import '../models/model.dart';
@@ -12,37 +12,55 @@ import '../models/used_light.dart';
 import '../models/tools.dart';
 import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
 
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
 class ControllerModel extends ChangeNotifier {
   List<UsedLight> selectedUsedLights = [];
   List<Model> models = [];
-  List<int> channels = List.generate(512, (_) => 0); // Initialise 512 channels à 0
-
-  List<int> dmxChannels = List<int>.filled(512, 0); // Tableau de 512 canaux
-  final String espIp = 'http://192.168.1.112';
+  List<int> channels = List.generate(512, (_) => 0);
+  WebSocketChannel? _channel;
   Timer? _updateTimer;
+
+  ControllerModel() {
+    _connectWebSocket();
+  }
+
+  void _connectWebSocket() {
+    _channel = IOWebSocketChannel.connect('ws://192.168.1.102:3000');
+    _channel!.stream.listen(
+      (data) {
+        try {
+          Map<String, dynamic> receivedData = jsonDecode(data);
+          if (receivedData.containsKey('fullState')) {
+            channels = List<int>.from(receivedData['fullState']);
+            print(
+                "📥 État complet reçu : $channels"); // DEBUG: Afficher l'état complet reçu
+          } else if (receivedData.containsKey('changes')) {
+            receivedData['changes'].forEach((key, value) {
+              int index = int.parse(key);
+              channels[index] = value;
+            });
+            print(
+                "📥 Changements reçus : ${receivedData['changes']}"); // DEBUG: Afficher les changements reçus
+          }
+          notifyListeners();
+        } catch (e) {
+          print("Erreur lors de la réception des données WebSocket: $e");
+        }
+      },
+      onError: (error) => print("Erreur WebSocket: $error"),
+      onDone: () => print("Connexion WebSocket fermée"),
+    );
+    print(
+        "🔗 Connecté au serveur WebSocket"); // DEBUG: Afficher la connexion au serveur
+  }
 
   @override
   void dispose() {
     _updateTimer?.cancel();
+    _channel?.sink.close();
     super.dispose();
-  }
-
-  Future<void> _sendDMXValues() async {
-    final url = Uri.parse('$espIp/setDMX');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'channels': channels}),
-      );
-      if (response.statusCode == 200) {
-        print("Values sent successfully: ${response.body}");
-      } else {
-        print("Failed to send DMX values: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error sending DMX values: $e");
-    }
   }
 
   void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
@@ -69,15 +87,30 @@ class ControllerModel extends ChangeNotifier {
   void resetChannels() {
     channels.fillRange(0, channels.length, 0);
     notifyListeners();
+    _sendDMXValues();
   }
 
-  /// Applique les valeurs actuelles des `channels` à un statut donné.
+  void _sendDMXValues() {
+    try {
+      if (_channel != null && _channel!.sink != null) {
+        Map<String, int> delta = {};
+        for (int i = 0; i < channels.length; i++) {
+          delta[i.toString()] = channels[i];
+        }
+        _channel!.sink.add(jsonEncode({'channels': delta}));
+        print(
+            "📤 Données envoyées au serveur : $delta"); // DEBUG: Afficher les données envoyées
+      }
+    } catch (e) {
+      print("Erreur d'envoi des données WebSocket: $e");
+    }
+  }
+
   Future<void> applyChannelsToStatu(Statu statu) async {
     statu.channels = List.from(channels);
     notifyListeners();
   }
 }
-
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -89,8 +122,8 @@ class ControlPage extends StatefulWidget {
 class ControlPageState extends State<ControlPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const SliderScreen(),
+    return const Scaffold(
+      body: SliderScreen(),
     );
   }
 }
@@ -108,12 +141,11 @@ class _SliderScreenState extends State<SliderScreen> {
     super.initState();
     _fetchInitialData();
   }
-  
 
   Future<void> _fetchInitialData() async {
     // Exemple pour charger des données depuis la DBHelper
     final dbHelper = DBHelper();
-// À remplir en fonction de votre logique.
+    // À remplir en fonction de votre logique.
 
     setState(() {});
   }
@@ -124,8 +156,8 @@ class _SliderScreenState extends State<SliderScreen> {
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu
-          child: HorizontalStatuManager(),
-          // child: ChannelValuesWidget(),
+          // child: HorizontalStatuManager(),
+          child: ChannelValuesWidget(),
         ),
         Expanded(
           child: Row(
@@ -189,9 +221,9 @@ class _ControlWidgetState extends State<ControlWidget> {
   }
 }
 
-
-
 class HorizontalStatuManager extends StatefulWidget {
+  const HorizontalStatuManager({super.key});
+
   @override
   _HorizontalStatuManagerState createState() => _HorizontalStatuManagerState();
 }
@@ -261,7 +293,7 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
       children: [
         Expanded(
           child: _status.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     "No status available",
                     style: TextStyle(fontSize: 16, color: Colors.grey),
@@ -295,20 +327,20 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
                   },
                 ),
         ),
-        SizedBox(width: 16),
+        const SizedBox(width: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
               onPressed: _addStatu,
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               color: Colors.green,
               iconSize: 40,
             ),
-            SizedBox(width: 20),
+            const SizedBox(width: 20),
             IconButton(
               onPressed: _removeLastStatu,
-              icon: Icon(Icons.remove),
+              icon: const Icon(Icons.remove),
               color: Colors.red,
               iconSize: 40,
             ),
@@ -319,8 +351,9 @@ class _HorizontalStatuManagerState extends State<HorizontalStatuManager> {
   }
 }
 
-
 class UsedLightListScreen extends StatefulWidget {
+  const UsedLightListScreen({super.key});
+
   @override
   _UsedLightListScreenState createState() => _UsedLightListScreenState();
 }
@@ -399,7 +432,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
     } else {
       // Optionnel : Afficher une alerte si la sélection est invalide
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
             content: Text(
                 'Vous ne pouvez sélectionner que des éléments avec le même modèle.')),
       );
@@ -434,8 +467,8 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
           return GestureDetector(
             onTap: () => _toggleSelection(light),
             child: Container(
-              margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              padding: EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.transparent : color,
                 border: Border.all(
@@ -449,7 +482,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
                 children: [
                   Text(
                     'Used Light ID: ${light.usedLightId}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text('Model ID: $modelId'),
                   Text('Activated: ${light.activated ? "Yes" : "No"}'),
@@ -465,7 +498,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
 }
 
 class ControlerWidget extends StatefulWidget {
-  ControlerWidget({Key? key}) : super(key: key);
+  const ControlerWidget({super.key});
 
   @override
   _ControlerWidgetState createState() => _ControlerWidgetState();
@@ -475,6 +508,7 @@ class _ControlerWidgetState extends State<ControlerWidget> {
   late List<Tools> tools = []; // Liste des tools générés
   late List<List<List<int>>> tool_channels =
       []; // Liste des channels groupés par outils
+  Timer? _throttleTimer;
 
   @override
   void initState() {
@@ -486,16 +520,11 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     });
   }
 
-  Timer? _debounceTimer;
-
-  /// Méthode utilitaire pour exécuter une action avec un délai (debounce)
-  void _debounce(Function() action, {Duration duration = const Duration(milliseconds: 200)}) {
-    // Annuler le précédent timer
-    if (_debounceTimer?.isActive ?? false) {
-      _debounceTimer!.cancel();
-    }
-    // Démarrer un nouveau timer
-    _debounceTimer = Timer(duration, action);
+  /// Méthode utilitaire pour exécuter une action avec un délai (throttle)
+  void _throttle(Function() action,
+      {Duration duration = const Duration(milliseconds: 50)}) {
+    if (_throttleTimer?.isActive ?? false) return;
+    _throttleTimer = Timer(duration, action);
   }
 
   /// Génère les outils en fonction de `selectedUsedLights` et des modèles
@@ -522,7 +551,6 @@ class _ControlerWidgetState extends State<ControlerWidget> {
           if (tools.length > i) {
             tool_channels[i].add(
                 validChannels.map((ch) => light.channels[ch - 1]).toList());
-            // }
           } else {
             tool_channels.add(
                 [validChannels.map((ch) => light.channels[ch - 1]).toList()]);
@@ -549,7 +577,7 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     _generateTools(controller);
 
     if (tools.isEmpty) {
-      return Center(
+      return const Center(
         child: Text('Aucun outil disponible'),
       );
     }
@@ -596,13 +624,19 @@ class _ControlerWidgetState extends State<ControlerWidget> {
           int green = color.green; // Valeur de G (0 à 255)
           int blue = color.blue; // Valeur de B (0 à 255)
 
-          // Utiliser debounce pour limiter les mises à jour
-          _debounce(() {
+          // Utiliser throttle pour limiter les mises à jour
+          _throttle(() {
             for (var channels in channelGroups) {
               if (channels.length >= 3) {
-                context.read<ControllerModel>().updateChannelValue(channels[0], red);
-                context.read<ControllerModel>().updateChannelValue(channels[1], green);
-                context.read<ControllerModel>().updateChannelValue(channels[2], blue);
+                context
+                    .read<ControllerModel>()
+                    .updateChannelValue(channels[0] - 1, red);
+                context
+                    .read<ControllerModel>()
+                    .updateChannelValue(channels[1] - 1, green);
+                context
+                    .read<ControllerModel>()
+                    .updateChannelValue(channels[2] - 1, blue);
               }
             }
           });
@@ -616,7 +650,8 @@ class _ControlerWidgetState extends State<ControlerWidget> {
       ControllerModel controller, List<List<int>> channelGroups) {
     // Calculer la valeur moyenne initiale des canaux
     double initialValue = channelGroups
-            .expand((channels) => channels.map((ch) => controller.channels[ch]))
+            .expand(
+                (channels) => channels.map((ch) => controller.channels[ch - 1]))
             .reduce((a, b) => a + b)
             .toDouble() /
         (channelGroups.expand((e) => e).length); // Diviser par le total réel
@@ -629,11 +664,13 @@ class _ControlerWidgetState extends State<ControlerWidget> {
         max: 255, // Plage de 0 à 255
         onChanged: (newValue) {
           setState(() {
-            // Utiliser debounce pour limiter les mises à jour
-            _debounce(() {
+            // Utiliser throttle pour limiter les mises à jour
+            _throttle(() {
               for (var channels in channelGroups) {
                 for (var ch in channels) {
-                  context.read<ControllerModel>().updateChannelValue(ch, newValue.toInt());
+                  context
+                      .read<ControllerModel>()
+                      .updateChannelValue(ch - 1, newValue.toInt());
                 }
               }
             });
@@ -646,12 +683,14 @@ class _ControlerWidgetState extends State<ControlerWidget> {
   @override
   void dispose() {
     // Annuler tout timer actif lorsque le widget est détruit
-    _debounceTimer?.cancel();
+    _throttleTimer?.cancel();
     super.dispose();
   }
 }
 
 class ChannelValuesWidget extends StatelessWidget {
+  const ChannelValuesWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Écouter les changements dans ControllerModel
@@ -659,7 +698,7 @@ class ChannelValuesWidget extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Valeurs des Canaux'),
+        title: const Text('Valeurs des Canaux'),
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal, // Défilement horizontal
@@ -676,7 +715,7 @@ class ChannelValuesWidget extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '$channelValue', // Affiche la valeur du canal
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),

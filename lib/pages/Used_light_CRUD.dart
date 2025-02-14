@@ -5,6 +5,8 @@ import '../models/model.dart';
 
 
 class UsedLightPage extends StatefulWidget {
+  const UsedLightPage({super.key});
+
   @override
   _UsedLightPageState createState() => _UsedLightPageState();
 }
@@ -58,7 +60,7 @@ class _UsedLightPageState extends State<UsedLightPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gestion des Used Lights'),
+        title: const Text('Gestion des Used Lights'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -73,11 +75,11 @@ class _UsedLightPageState extends State<UsedLightPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Ajouter un Used Light',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Dropdown pour sélectionner un Model
                       DropdownButton<int>(
                         value: _selectedModelId,
@@ -95,9 +97,9 @@ class _UsedLightPageState extends State<UsedLightPage> {
                           });
                         },
                         isExpanded: true,
-                        hint: Text('Sélectionnez un modèle'),
+                        hint: const Text('Sélectionnez un modèle'),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Checkbox pour l'état activé
                       Row(
                         children: [
@@ -109,25 +111,25 @@ class _UsedLightPageState extends State<UsedLightPage> {
                               });
                             },
                           ),
-                          Text('Activé'),
+                          const Text('Activé'),
                         ],
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // Bouton pour ajouter
                       ElevatedButton(
                         onPressed: _addUsedLight,
-                        child: Text('Ajouter'),
+                        child: const Text('Ajouter'),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               // Liste des Used Lights
               _usedLights.isEmpty
-                  ? Center(child: Text('Aucun Used Light disponible.'))
+                  ? const Center(child: Text('Aucun Used Light disponible.'))
                   : ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount: _usedLights.length,
                       itemBuilder: (context, index) {
@@ -148,7 +150,7 @@ class _UsedLightPageState extends State<UsedLightPage> {
                             title: Text('Model: ${model.ref}'),
                             subtitle: Text('Activé: ${usedLight.activated ? "Oui" : "Non"}'),
                             trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _deleteUsedLight(usedLight.usedLightId!),
                             ),
                           ),

@@ -1,0 +1,81 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_application_3/models/custom_slider.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // Import nécessaire pour encoder en JSON
+import '../models/statu.dart';
+import '../database/db_helper.dart';
+import '../models/model.dart';
+import '../models/used_light.dart';
+import '../models/tools.dart';
+import 'package:flutter_circle_color_picker/flutter_circle_color_picker.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
+
+class ControllerModel extends ChangeNotifier {
+  List<UsedLight> selectedUsedLights = [];
+  List<Model> models = [];
+  List<int> channels = List.generate(512, (_) => 0); // Initialise 512 channels à 0
+
+  List<int> dmxChannels = List<int>.filled(512, 0); // Tableau de 512 canaux
+  final String espIp = 'http://192.168.1.112';
+  Timer? _updateTimer;
+
+  @override
+  void dispose() {
+    _updateTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _sendDMXValues() async {
+    final url = Uri.parse('$espIp/setDMX');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'channels': channels}),
+      );
+      if (response.statusCode == 200) {
+        print("Values sent successfully: ${response.body}");
+      } else {
+        print("Failed to send DMX values: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error sending DMX values: $e");
+    }
+  }
+
+  void updateData(List<UsedLight>? newUsedLights, List<Model>? newModels) {
+    if (newUsedLights != null) {
+      selectedUsedLights = newUsedLights;
+    }
+    if (newModels != null) {
+      models = newModels;
+    }
+    notifyListeners();
+    _sendDMXValues();
+  }
+
+  void updateChannelValue(int index, int value) {
+    if (index >= 0 && index < channels.length) {
+      if (channels[index] != value) {
+        channels[index] = value;
+        notifyListeners();
+        _sendDMXValues();
+      }
+    }
+  }
+
+  void resetChannels() {
+    channels.fillRange(0, channels.length, 0);
+    notifyListeners();
+  }
+
+  /// Applique les valeurs actuelles des `channels` à un statut donné.
+  Future<void> applyChannelsToStatu(Statu statu) async {
+    statu.channels = List.from(channels);
+    notifyListeners();
+  }
+}

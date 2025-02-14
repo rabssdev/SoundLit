@@ -7,6 +7,8 @@ import '../database/db_helper.dart'; // Votre helper pour la base de données
 import '../models/statu.dart'; // Le modèle de votre entité Statu
 
 class RunPage extends StatelessWidget {
+  const RunPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Center(child: CircleDragAndDropPage());
@@ -16,6 +18,8 @@ class RunPage extends StatelessWidget {
 //ECHANGE DE CERCLE
 class CircleDragAndDropPage extends StatefulWidget {
   final String espIp = "http://192.168.1.112";
+
+  const CircleDragAndDropPage({super.key});
   @override
   _CircleDragAndDropPageState createState() => _CircleDragAndDropPageState();
 }
@@ -56,7 +60,11 @@ class _CircleDragAndDropPageState extends State<CircleDragAndDropPage> {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'channels': channels}),
+        body: jsonEncode({
+          'channels': channels
+              .asMap()
+              .map((index, value) => MapEntry(index.toString(), value))
+        }),
       );
       if (response.statusCode == 200) {
         print("Valeurs envoyées avec succès : ${response.body}");
@@ -153,7 +161,7 @@ class _CircleDragAndDropPageState extends State<CircleDragAndDropPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Échange de cercles"),
+        title: const Text("Échange de cercles"),
       ),
       body: statusList.isEmpty
           ? const Center(child: CircularProgressIndicator())
@@ -161,14 +169,15 @@ class _CircleDragAndDropPageState extends State<CircleDragAndDropPage> {
               padding: const EdgeInsets.all(16.0),
               child: GridView.builder(
                 itemCount: statusList.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 5, // 5 cercles par ligne
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
                 ),
                 itemBuilder: (context, index) {
                   return DragTarget<int>(
-                    onAccept: (fromIndex) {
+                    onAcceptWithDetails: (details) {
+                      final fromIndex = details.data;
                       // Échanger les cercles
                       setState(() {
                         final temp = circles[fromIndex];
@@ -208,6 +217,7 @@ class CircleWidget extends StatelessWidget {
   final bool isPlaceholder;
 
   const CircleWidget({
+    super.key,
     required this.number,
     required this.isDragging,
     this.isPlaceholder = false,
@@ -221,7 +231,7 @@ class CircleWidget extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: isDragging
             ? [
-                BoxShadow(
+                const BoxShadow(
                   color: Colors.black26,
                   blurRadius: 8,
                   offset: Offset(0, 4),
@@ -232,7 +242,7 @@ class CircleWidget extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         isPlaceholder ? "" : "$number",
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
           fontSize: 20,
