@@ -19,6 +19,7 @@ class ControllerModel extends ChangeNotifier {
   List<UsedLight> selectedUsedLights = [];
   List<Model> models = [];
   List<int> channels = List.generate(512, (_) => 0);
+  List<int> previousChannels = List.generate(512, (_) => 0);
   WebSocketChannel? _channel;
   Timer? _updateTimer;
 
@@ -95,11 +96,16 @@ class ControllerModel extends ChangeNotifier {
       if (_channel != null && _channel!.sink != null) {
         Map<String, int> delta = {};
         for (int i = 0; i < channels.length; i++) {
-          delta[i.toString()] = channels[i];
+          if (channels[i] != previousChannels[i]) {
+            delta[i.toString()] = channels[i];
+            previousChannels[i] = channels[i];
+          }
         }
-        _channel!.sink.add(jsonEncode({'channels': delta}));
-        print(
-            "📤 Données envoyées au serveur : $delta"); // DEBUG: Afficher les données envoyées
+        if (delta.isNotEmpty) {
+          _channel!.sink.add(jsonEncode({'channels': delta}));
+          print(
+              "📤 Données envoyées au serveur : $delta"); // DEBUG: Afficher les données envoyées
+        }
       }
     } catch (e) {
       print("Erreur d'envoi des données WebSocket: $e");
