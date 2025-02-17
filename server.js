@@ -18,7 +18,7 @@ wss.on('connection', ws => {
     console.log("💻 Client connecté");
 
     // Envoyer l'état actuel des canaux DMX au nouveau client
-    ws.send(JSON.stringify(dmxData));a
+    ws.send(JSON.stringify({ channels: dmxData }));
 
     ws.on('message', message => {
         console.log("📥 Message reçu du client :", message); // DEBUG: Voir le message brut du client
