@@ -162,8 +162,8 @@ class _SliderScreenState extends State<SliderScreen> {
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu
-          // child: HorizontalStatuManager(),
-          child: ChannelValuesWidget(),
+          child: HorizontalStatuManager(),
+          // child: ChannelValuesWidget(),
         ),
         Expanded(
           child: Row(

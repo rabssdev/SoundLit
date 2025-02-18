@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../database/db_helper.dart'; // Votre helper pour la base de données
 import '../models/statu.dart'; // Le modèle de votre entité Statu
 
 class RunStatusPage extends StatefulWidget {
-  final String espIp = "http://192.168.1.112";
+  final String wsUrl = "ws://192.168.1.102:3000";
 
   const RunStatusPage({super.key});
 
@@ -19,11 +20,36 @@ class _RunStatusPageState extends State<RunStatusPage> {
   bool isRunning = false;
   int currentStatusIndex = 0;
   Timer? statusTimer;
+  WebSocketChannel? _channel;
 
   @override
   void initState() {
     super.initState();
+    _connectWebSocket();
     _loadStatusesFromDatabase();
+  }
+
+  void _connectWebSocket() {
+    _channel = IOWebSocketChannel.connect(widget.wsUrl);
+    _channel!.stream.listen(
+      (data) {
+        print("📥 Données reçues du serveur : $data");
+      },
+      onError: (error) {
+        print("Erreur WebSocket : $error");
+      },
+      onDone: () {
+        print("Connexion WebSocket fermée");
+      },
+    );
+    print("🔗 Connecté au serveur WebSocket");
+  }
+
+  @override
+  void dispose() {
+    statusTimer?.cancel();
+    _channel?.sink.close();
+    super.dispose();
   }
 
   /// Charge les statuts depuis la base de données
@@ -41,22 +67,19 @@ class _RunStatusPageState extends State<RunStatusPage> {
     });
   }
 
-  /// Envoie des valeurs DMX au serveur ESP8266
-  Future<void> _sendDMXValues(List<int> channels) async {
-    final url = Uri.parse('${widget.espIp}/setDMX');
+  /// Envoie des valeurs DMX au serveur via WebSocket
+  void _sendDMXValues(List<int> channels) {
     try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'channels': channels}),
-      );
-      if (response.statusCode == 200) {
-        print("Valeurs envoyées avec succès : ${response.body}");
-      } else {
-        print("Échec de l'envoi des valeurs : ${response.statusCode}");
+      if (_channel != null && _channel!.sink != null) {
+        Map<String, int> delta = {};
+        for (int i = 0; i < channels.length; i++) {
+          delta[i.toString()] = channels[i];
+        }
+        _channel!.sink.add(jsonEncode({'channels': delta}));
+        print("📤 Données envoyées au serveur : $delta");
       }
     } catch (e) {
-      print("Erreur lors de l'envoi : $e");
+      print("Erreur d'envoi des données WebSocket : $e");
     }
   }
 
@@ -88,7 +111,7 @@ class _RunStatusPageState extends State<RunStatusPage> {
     final currentStatus = statusList[currentStatusIndex];
 
     // Envoie les valeurs actuelles
-    await _sendDMXValues(currentStatus['channels']);
+    _sendDMXValues(currentStatus['channels']);
 
     // Programme le délai pour le prochain statut
     statusTimer = Timer(
@@ -109,7 +132,8 @@ class _RunStatusPageState extends State<RunStatusPage> {
   }
 
   /// Dialogue pour saisir un nouveau délai
-  Future<int?> _showDelayInputDialog(BuildContext context, int currentDelay) async {
+  Future<int?> _showDelayInputDialog(
+      BuildContext context, int currentDelay) async {
     TextEditingController controller =
         TextEditingController(text: currentDelay.toString());
     return showDialog<int>(
@@ -191,8 +215,8 @@ class _RunStatusPageState extends State<RunStatusPage> {
                   ElevatedButton(
                     onPressed: _toggleRun,
                     style: ElevatedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 16),
                     ),
                     child: Text(isRunning ? "Arrêter" : "Démarrer"),
                   ),
@@ -207,7 +231,8 @@ class CircleWidget extends StatelessWidget {
   final int number;
   final bool isDragging;
 
-  const CircleWidget({super.key, 
+  const CircleWidget({
+    super.key,
     required this.number,
     required this.isDragging,
   });
