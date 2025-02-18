@@ -5,6 +5,7 @@ import '../models/statu.dart';
 import '../models/tools.dart';
 import '../models/model.dart';
 import '../models/used_light.dart';
+import '../models/succession.dart';
 
 class DBHelper {
   static final DBHelper _instance = DBHelper._internal();
@@ -69,6 +70,13 @@ class DBHelper {
             activated INTEGER NOT NULL,
             channels TEXT NOT NULL,
             FOREIGN KEY (model_id) REFERENCES Model(model_id)
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE Succession (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            status_order TEXT NOT NULL
           )
         ''');
       },
@@ -137,18 +145,17 @@ class DBHelper {
   }
 
 //*********************************************************************CRUD STATU */
-Future<int> insertStatu(Statu statu) async {
-  final db = await database;
-  
-  // Récupère tous les statuts pour calculer le prochain ID
-  final statusList = await getAllStatus();
-  int newId = statusList.isEmpty ? 1 : statusList.length + 1;
-  
-  statu.statuId = newId; // Assigne l'ID calculé
+  Future<int> insertStatu(Statu statu) async {
+    final db = await database;
 
-  return await db.insert('Statu', statu.toMap());
-}
+    // Récupère tous les statuts pour calculer le prochain ID
+    final statusList = await getAllStatus();
+    int newId = statusList.isEmpty ? 1 : statusList.length + 1;
 
+    statu.statuId = newId; // Assigne l'ID calculé
+
+    return await db.insert('Statu', statu.toMap());
+  }
 
   Future<List<Statu>> getAllStatus() async {
     final db = await database;
@@ -176,16 +183,31 @@ Future<int> insertStatu(Statu statu) async {
   }
 
   // Méthode pour mettre à jour le délai d'un statut
-Future<int> updateStatuDelay(int statuId, int newDelay) async {
-  final db = await database;
-  return await db.update(
-    'Statu',
-    {'delay_after': newDelay}, // Met à jour le champ 'delay_after'
-    where: 'statu_id = ?', // Condition pour cibler le statut par son ID
-    whereArgs: [statuId], // L'ID du statut à mettre à jour
-  );
-}
+  Future<int> updateStatuDelay(int statuId, int newDelay) async {
+    final db = await database;
+    return await db.update(
+      'Statu',
+      {'delay_after': newDelay}, // Met à jour le champ 'delay_after'
+      where: 'statu_id = ?', // Condition pour cibler le statut par son ID
+      whereArgs: [statuId], // L'ID du statut à mettre à jour
+    );
+  }
 
+  Future<Statu?> getStatuById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'Statu',
+      where: 'statu_id = ?',
+      whereArgs: [id],
+    );
+
+    if (result.isEmpty) {
+      // Return null if the statu with the given id is not found
+      return null;
+    }
+
+    return Statu.fromMap(result.first);
+  }
 
   // CRUD pour Tools
 
@@ -279,11 +301,10 @@ Future<int> updateStatuDelay(int statuId, int newDelay) async {
 
 //******************************CRUD USED_LIGHT */
 
-Future<int> insertUsedLight(UsedLight usedLight) async {
-  final db = await database;
-  return await db.insert('UsedLight', usedLight.toMap());
-}
-
+  Future<int> insertUsedLight(UsedLight usedLight) async {
+    final db = await database;
+    return await db.insert('UsedLight', usedLight.toMap());
+  }
 
   Future<List<UsedLight>> getAllUsedLights() async {
     final db = await database;
@@ -308,5 +329,53 @@ Future<int> insertUsedLight(UsedLight usedLight) async {
       where: 'used_light_id = ?',
       whereArgs: [usedLightId],
     );
+  }
+
+//******************************CRUD SUCCESSION */
+
+  Future<int> insertSuccession(Succession succession) async {
+    final db = await database;
+    return await db.insert('Succession', succession.toMap());
+  }
+
+  Future<List<Succession>> getAllSuccessions() async {
+    final db = await database;
+    final maps = await db.query('Succession');
+    return maps.map((map) => Succession.fromMap(map)).toList();
+  }
+
+  Future<int> updateSuccession(Succession succession) async {
+    final db = await database;
+    return await db.update(
+      'Succession',
+      succession.toMap(),
+      where: 'id = ?',
+      whereArgs: [succession.id],
+    );
+  }
+
+  Future<int> deleteSuccession(int id) async {
+    final db = await database;
+    return await db.delete(
+      'Succession',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<Succession?> getSuccessionById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'Succession',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (result.isEmpty) {
+      // Return null if the succession with the given id is not found
+      return null;
+    }
+
+    return Succession.fromMap(result.first);
   }
 }

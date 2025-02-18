@@ -5,6 +5,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../database/db_helper.dart'; // Votre helper pour la base de données
 import '../models/statu.dart'; // Le modèle de votre entité Statu
+import '../models/succession.dart'; // Le modèle de votre entité Succession
 
 class RunStatusPage extends StatefulWidget {
   final String wsUrl = "ws://192.168.1.102:3000";
@@ -124,11 +125,14 @@ class _RunStatusPageState extends State<RunStatusPage> {
     );
   }
 
-  /// Met à jour le délai d'un statut
-  void _updateDelay(int index, int newDelay) {
+  /// Met à jour le délai d'un statut et le sauvegarde dans la base de données
+  Future<void> _updateDelay(int index, int newDelay) async {
     setState(() {
       statusList[index]['delayAfter'] = newDelay;
     });
+
+    final dbHelper = DBHelper();
+    await dbHelper.updateStatuDelay(statusList[index]['id'], newDelay);
   }
 
   /// Dialogue pour saisir un nouveau délai
@@ -164,11 +168,30 @@ class _RunStatusPageState extends State<RunStatusPage> {
     );
   }
 
+  /// Enregistre la succession des statuts dans la base de données
+  Future<void> _saveSuccession() async {
+    final dbHelper = DBHelper();
+    final succession = Succession(
+      name: "Succession ${DateTime.now()}",
+      statusOrder: statusList.map((status) => status['id'] as int).toList(),
+    );
+    await dbHelper.insertSuccession(succession);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Succession enregistrée avec succès')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Run Status"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _saveSuccession,
+          ),
+        ],
       ),
       body: statusList.isEmpty
           ? const Center(child: CircularProgressIndicator())

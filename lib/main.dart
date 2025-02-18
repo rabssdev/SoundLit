@@ -17,6 +17,7 @@ import 'pages/Add_used_light.dart';
 import 'pages/Show_used_light.dart';
 // import 'pages/TEST.dart';
 import 'pages/RunStatusPage.dart';
+import 'pages/RunSuccessionPage.dart'; // Import the new page
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     const WelcomePage(),
     const ControlPage(),
-    RunPage(),
+    // RunPage(),
+    RunSuccessionPage(),
     const AddLightPage(),
     ToolsPage(),
     DatabaseResetPage(),
@@ -77,6 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
     AddUsedLightPage(),
     UsedLightsPage(),
     RunStatusPage(),
+     // Add the new page
   ];
 
   // Méthode de changement de page
@@ -169,6 +172,11 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Run statu'),
               onTap: () => _onItemTapped(12),
             ),
+            // ListTile(
+            //   leading: const Icon(Icons.run_circle),
+            //   title: const Text('Run Succession'), // Add the new menu item
+            //   onTap: () => _onItemTapped(13),
+            // ),
           ],
         ),
       ),
