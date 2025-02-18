@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
     AddUsedLightPage(),
     UsedLightsPage(),
     RunStatusPage(),
-     // Add the new page
+    // Add the new page
   ];
 
   // Méthode de changement de page

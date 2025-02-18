@@ -8,7 +8,7 @@ import '../models/statu.dart'; // Le modèle de votre entité Statu
 import '../models/succession.dart'; // Le modèle de votre entité Succession
 
 class RunStatusPage extends StatefulWidget {
-  final String wsUrl = "ws://192.168.1.102:3000";
+  final String wsUrl = "ws://192.168.1.112:3000"; // Ensure this URL is correct
 
   const RunStatusPage({super.key});
 
@@ -22,6 +22,7 @@ class _RunStatusPageState extends State<RunStatusPage> {
   int currentStatusIndex = 0;
   Timer? statusTimer;
   WebSocketChannel? _channel;
+  List<int> previousChannels = List.generate(512, (_) => 0);
 
   @override
   void initState() {
@@ -74,10 +75,15 @@ class _RunStatusPageState extends State<RunStatusPage> {
       if (_channel != null && _channel!.sink != null) {
         Map<String, int> delta = {};
         for (int i = 0; i < channels.length; i++) {
-          delta[i.toString()] = channels[i];
+          if (channels[i] != previousChannels[i]) {
+            delta[i.toString()] = channels[i];
+            previousChannels[i] = channels[i];
+          }
         }
-        _channel!.sink.add(jsonEncode({'channels': delta}));
-        print("📤 Données envoyées au serveur : $delta");
+        if (delta.isNotEmpty) {
+          _channel!.sink.add(jsonEncode({'channels': delta}));
+          print("📤 Données envoyées au serveur : $delta");
+        }
       }
     } catch (e) {
       print("Erreur d'envoi des données WebSocket : $e");
@@ -110,6 +116,8 @@ class _RunStatusPageState extends State<RunStatusPage> {
     if (!isRunning || statusList.isEmpty) return;
 
     final currentStatus = statusList[currentStatusIndex];
+    print(
+        "🔄 Exécution du statut ${currentStatus['id']} avec un délai de ${currentStatus['delayAfter']} ms");
 
     // Envoie les valeurs actuelles
     _sendDMXValues(currentStatus['channels']);
@@ -168,17 +176,49 @@ class _RunStatusPageState extends State<RunStatusPage> {
     );
   }
 
+  /// Dialogue pour saisir le nom de la succession
+  Future<String?> _showNameInputDialog(BuildContext context) async {
+    TextEditingController controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Nommer la succession"),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: "Nom"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Annuler"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(controller.text);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// Enregistre la succession des statuts dans la base de données
   Future<void> _saveSuccession() async {
-    final dbHelper = DBHelper();
-    final succession = Succession(
-      name: "Succession ${DateTime.now()}",
-      statusOrder: statusList.map((status) => status['id'] as int).toList(),
-    );
-    await dbHelper.insertSuccession(succession);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Succession enregistrée avec succès')),
-    );
+    final name = await _showNameInputDialog(context);
+    if (name != null && name.isNotEmpty) {
+      final dbHelper = DBHelper();
+      final succession = Succession(
+        name: name,
+        statusOrder: statusList.map((status) => status['id'] as int).toList(),
+      );
+      await dbHelper.insertSuccession(succession);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Succession enregistrée avec succès')),
+      );
+    }
   }
 
   @override

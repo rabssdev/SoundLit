@@ -124,6 +124,16 @@ class _RunSuccessionPageState extends State<RunSuccessionPage> {
     }
   }
 
+  /// Supprime une succession de la base de données
+  Future<void> _deleteSuccession(int id) async {
+    final dbHelper = DBHelper();
+    await dbHelper.deleteSuccession(id);
+    _loadSuccessionsFromDatabase();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Succession supprimée avec succès')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,9 +148,18 @@ class _RunSuccessionPageState extends State<RunSuccessionPage> {
                 final succession = successions[index];
                 return ListTile(
                   title: Text(succession.name),
-                  trailing: ElevatedButton(
-                    onPressed: () => _toggleRun(succession),
-                    child: Text(isRunning ? "Arrêter" : "Démarrer"),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => _toggleRun(succession),
+                        child: Text(isRunning ? "Arrêter" : "Démarrer"),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteSuccession(succession.id!),
+                      ),
+                    ],
                   ),
                 );
               },
