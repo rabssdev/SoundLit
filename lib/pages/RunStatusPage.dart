@@ -9,7 +9,8 @@ import '../models/succession.dart'; // Le modèle de votre entité Succession
 import '../models/succession_statu.dart'; // Le modèle de votre entité SuccessionStatu
 
 class RunStatusPage extends StatefulWidget {
-  final String wsUrl = "ws://192.168.1.112:3000"; // Ensure this URL is correct
+  final String wsUrl =
+      "ws://192.168.1.102:3000"; // Updated to match RunSuccessionPage
 
   const RunStatusPage({super.key});
 
@@ -39,22 +40,7 @@ class _RunStatusPageState extends State<RunStatusPage> {
       _channel = IOWebSocketChannel.connect(widget.wsUrl);
       _channel!.stream.listen(
         (data) {
-          try {
-            Map<String, dynamic> receivedData = jsonDecode(data);
-            if (receivedData.containsKey('fullState')) {
-              channels = List<int>.from(receivedData['fullState']);
-              print("📥 État complet reçu : $channels");
-            } else if (receivedData.containsKey('changes')) {
-              receivedData['changes'].forEach((key, value) {
-                int index = int.parse(key);
-                channels[index] = value;
-              });
-              print("📥 Changements reçus : ${receivedData['changes']}");
-            }
-            setState(() {});
-          } catch (e) {
-            print("Erreur lors de la réception des données WebSocket: $e");
-          }
+          print("📥 Données reçues du serveur : $data");
         },
         onError: (error) {
           print("Erreur WebSocket : $error");
@@ -161,15 +147,10 @@ class _RunStatusPageState extends State<RunStatusPage> {
       if (_channel != null) {
         Map<String, int> delta = {};
         for (int i = 0; i < channels.length; i++) {
-          if (channels[i] != previousChannels[i]) {
-            delta[i.toString()] = channels[i];
-            previousChannels[i] = channels[i];
-          }
+          delta[i.toString()] = channels[i];
         }
-        if (delta.isNotEmpty) {
-          _channel!.sink.add(jsonEncode({'channels': delta}));
-          print("📤 Données envoyées au serveur : $delta");
-        }
+        _channel!.sink.add(jsonEncode({'channels': delta}));
+        print("📤 Données envoyées au serveur : $delta");
       }
     } catch (e) {
       print("Erreur d'envoi des données WebSocket : $e");
@@ -204,7 +185,7 @@ class _RunStatusPageState extends State<RunStatusPage> {
     final currentStatus = statusList[currentStatusIndex];
     print(
         "🔄 Exécution du statut ${currentStatus['id']} avec un délai de ${currentStatus['delayAfter']} ms");
-
+    print("hello hello");
     // Envoie les valeurs actuelles
     _sendDMXValues(currentStatus['channels']);
 
@@ -262,9 +243,6 @@ class _RunStatusPageState extends State<RunStatusPage> {
     );
   }
 
-  
-
-
   /// Charge les successions depuis la base de données
   Future<void> _loadSuccessionsFromDatabase() async {
     final dbHelper = DBHelper();
@@ -274,7 +252,6 @@ class _RunStatusPageState extends State<RunStatusPage> {
       successions = fetchedSuccessions;
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
