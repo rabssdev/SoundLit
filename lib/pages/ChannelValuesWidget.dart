@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/controller_model.dart';
 
 class ChannelValuesWidget extends StatelessWidget {
+  const ChannelValuesWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     final controller = Provider.of<ControllerModel>(context);

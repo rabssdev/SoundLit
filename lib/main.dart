@@ -30,7 +30,7 @@ void main() {
     runApp(
       ChangeNotifierProvider(
         create: (context) => ControllerModel(),
-        child: MyApp(),
+        child: const MyApp(),
       ),
     );
   });
@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.brown,
         scaffoldBackgroundColor: const Color(0xFF140D16),
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
@@ -68,17 +68,17 @@ class _MyHomePageState extends State<MyHomePage> {
     const WelcomePage(),
     const ControlPage(),
     // RunPage(),
-    RunSuccessionPage(),
+    const RunSuccessionPage(),
     const AddLightPage(),
-    ToolsPage(),
-    DatabaseResetPage(),
-    AddModelPage(),
-    UsedLightPage(),
+    const ToolsPage(),
+    const DatabaseResetPage(),
+    const AddModelPage(),
+    const UsedLightPage(),
     const StatuPage(),
-    ModelsScreen(),
-    AddUsedLightPage(),
-    UsedLightsPage(),
-    RunStatusPage(),
+    const ModelsScreen(),
+    const AddUsedLightPage(),
+    const UsedLightsPage(),
+    const RunStatusPage(),
     // Add the new page
   ];
 

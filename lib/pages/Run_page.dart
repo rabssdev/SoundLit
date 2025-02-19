@@ -11,7 +11,7 @@ class RunPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: CircleDragAndDropPage());
+    return const Center(child: CircleDragAndDropPage());
   }
 }
 

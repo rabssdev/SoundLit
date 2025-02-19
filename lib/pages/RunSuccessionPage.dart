@@ -5,6 +5,8 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../database/db_helper.dart'; // Votre helper pour la base de données
 import '../models/succession.dart'; // Le modèle de votre entité Succession
+import '../models/succession_statu.dart'; // Le modèle de votre entité SuccessionStatu
+import '../models/statu.dart'; // Le modèle de votre entité Statu
 
 class RunSuccessionPage extends StatefulWidget {
   final String wsUrl = "ws://192.168.1.102:3000";
@@ -65,7 +67,7 @@ class _RunSuccessionPageState extends State<RunSuccessionPage> {
   /// Envoie des valeurs DMX au serveur via WebSocket
   void _sendDMXValues(List<int> channels) {
     try {
-      if (_channel != null && _channel!.sink != null) {
+      if (_channel != null) {
         Map<String, int> delta = {};
         for (int i = 0; i < channels.length; i++) {
           delta[i.toString()] = channels[i];
@@ -104,41 +106,53 @@ class _RunSuccessionPageState extends State<RunSuccessionPage> {
     if (!isRunning || succession.statusOrder.isEmpty) return;
 
     final dbHelper = DBHelper();
-    final currentStatusId = succession.statusOrder[currentStatusIndex];
-    final currentStatus = await dbHelper.getStatuById(currentStatusId);
+    final List<SuccessionStatu> successionStatus =
+        await dbHelper.getSuccessionStatus(succession.id!);
 
-    if (currentStatus != null) {
-      // Envoie les valeurs actuelles
-      _sendDMXValues(currentStatus.channels);
-
-      // Programme le délai pour le prochain statut
-      statusTimer = Timer(
-        Duration(milliseconds: currentStatus.delayAfter),
-        () {
-          if (!isRunning) return;
-          currentStatusIndex =
-              (currentStatusIndex + 1) % succession.statusOrder.length;
-          _runStatusSequence(succession); // Passe au statut suivant
-        },
-      );
+    if (successionStatus.isEmpty) {
+      print("⚠️ successionStatus is empty for succession ID: ${succession.id}");
+      return;
     }
+
+    final currentStatus = successionStatus[currentStatusIndex];
+    print(
+        "🔄 Exécution du statut ${currentStatus.id} avec un délai de ${currentStatus.delayAfter} ms");
+
+    // Envoie les valeurs actuelles
+    _sendDMXValues(currentStatus.channels);
+
+    // Programme le délai pour le prochain statut
+    statusTimer = Timer(
+      Duration(milliseconds: currentStatus.delayAfter),
+      () {
+        if (!isRunning) return;
+        currentStatusIndex =
+            (currentStatusIndex + 1) % succession.statusOrder.length;
+        _runStatusSequence(succession); // Passe au statut suivant
+      },
+    );
   }
 
   /// Supprime une succession de la base de données
   Future<void> _deleteSuccession(int id) async {
     final dbHelper = DBHelper();
     await dbHelper.deleteSuccession(id);
+    await dbHelper.deleteSuccessionStatus(id);
     _loadSuccessionsFromDatabase();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Succession supprimée avec succès')),
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Run Succession"),
+        actions: [
+          
+        ],
       ),
       body: successions.isEmpty
           ? const Center(child: CircularProgressIndicator())

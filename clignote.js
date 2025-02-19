@@ -77,83 +77,7 @@ const loader = new GLTFLoader();
 const animateFunctions = [];
 const movingHeads = {};
 
-const socket = new WebSocket("ws://localhost:3000");
-
-socket.addEventListener("open", () => {
-  console.log("🔗 Connecté au serveur WebSocket"); // DEBUG: Afficher la connexion au serveur
-});
-
-socket.addEventListener("message", (event) => {
-  try {
-    const data = JSON.parse(event.data);
-    console.log("📥 Données reçues du serveur :", data); // DEBUG: Afficher les données reçues
-    console.log("📥 Type de données reçues :", typeof data); // DEBUG: Afficher le type de données reçues
-
-    if (Array.isArray(data) && data.length === 512) {
-      // Appliquer l'état complet
-      applyFullState(data);
-    } else if (data.changes) {
-      // Appliquer les changements
-      applyChanges(data.changes);
-    }
-  } catch (error) {
-    console.error("Erreur JSON :", error);
-  }
-});
-
-socket.addEventListener("close", () => {
-  console.log("❌ Connexion WebSocket fermée"); // DEBUG: Afficher la fermeture de la connexion
-});
-
-const applyFullState = (fullState) => {
-  console.log("🔄 Application de l'état complet :", fullState); // DEBUG: Afficher l'état complet
-  for (let i = 0; i < fullState.length; i++) {
-    updateMovingHead(i, fullState[i]);
-  }
-};
-
-const applyChanges = (changes) => {
-  console.log("🔄 Application des changements :", changes); // DEBUG: Afficher les changements
-  for (const [channel, value] of Object.entries(changes)) {
-    updateMovingHead(parseInt(channel, 10), value);
-  }
-};
-
-const updateMovingHead = (channel, value) => {
-  console.log(`🔄 Mise à jour du canal ${channel} avec la valeur ${value}`); // DEBUG: Afficher les mises à jour des canaux
-  if (channel < 256) {
-    if (movingHeads["MH1"]) {
-      if (channel % 3 === 0) {
-        console.log(`🔄 Mise à jour de MH1 pan avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de pan
-        movingHeads["MH1"].updateDMX({ axis: "pan", value });
-      }
-      if (channel % 3 === 1) {
-        console.log(`🔄 Mise à jour de MH1 tilt avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de tilt
-        movingHeads["MH1"].updateDMX({ axis: "tilt", value });
-      }
-      if (channel % 3 === 2) {
-        console.log(`🔄 Mise à jour de MH1 flash avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de flash
-        movingHeads["MH1"].updateDMX({ axis: "flash", value });
-      }
-    }
-  } else {
-    if (movingHeads["MH2"]) {
-      if (channel % 3 === 0) {
-        console.log(`🔄 Mise à jour de MH2 pan avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de pan
-        movingHeads["MH2"].updateDMX({ axis: "pan", value });
-      }
-      if (channel % 3 === 1) {
-        console.log(`🔄 Mise à jour de MH2 tilt avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de tilt
-        movingHeads["MH2"].updateDMX({ axis: "tilt", value });
-      }
-      if (channel % 3 === 2) {
-        console.log(`🔄 Mise à jour de MH2 flash avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de flash
-        movingHeads["MH2"].updateDMX({ axis: "flash", value });
-      }
-    }
-  }
-};
-
+// Vérifier l'initialisation des moving heads
 const loadMovingHead = (positionX, id) => {
   loader.load("./models/VRAI_mh.glb", (gltf) => {
     const movingHead = gltf.scene;
@@ -228,12 +152,90 @@ const loadMovingHead = (positionX, id) => {
       },
     };
 
+    console.log(`Moving head MH${id + 1} loaded and added to movingHeads`); // DEBUG: Vérifier l'ajout des moving heads
+
     animateFunctions.push(() => movingHeads[`MH${id + 1}`].animate());
   });
 };
 
+// Charger les moving heads
 loadMovingHead(-roomWidth / 2 + 5, 0);
 loadMovingHead(roomWidth / 2 - 5, 1);
+
+// Vérifier la réception des données du serveur
+const socket = new WebSocket("ws://localhost:3000");
+socket.addEventListener("message", (event) => {
+  try {
+    const data = JSON.parse(event.data);
+    console.log("📥 Données reçues du serveur :", data); // DEBUG: Afficher les données reçues
+    console.log("📥 Type de données reçues :", typeof data); // DEBUG: Afficher le type de données reçues
+
+    // Appliquer l'état complet sans condition pour tester
+    applyFullState(data);
+
+    // if (Array.isArray(data) && data.length === 512) {
+    //   // Appliquer l'état complet
+    //   applyFullState(data);
+    // }
+  } catch (error) {
+    console.error("Erreur JSON :", error);
+  }
+});
+
+const applyFullState = (fullState) => {
+  console.log("🔄 Application de l'état complet :", fullState); // DEBUG: Afficher l'état complet
+  if (fullState.changes) {
+    const changes = fullState.changes;
+    for (const channel in changes) {
+      if (changes.hasOwnProperty(channel)) {
+        console.log("loading");
+        updateMovingHead(parseInt(channel, 10), changes[channel]);
+      }
+    }
+  } else {
+    console.error("Invalid fullState format");
+  }
+};
+
+// Vérifier la mise à jour des moving heads
+const updateMovingHead = (channel, value) => {
+  console.log(`🔄 Mise à jour du canal ${channel} avec la valeur ${value}`); // DEBUG: Afficher les mises à jour des canaux
+  if (channel === 1 || channel === 2 || channel === 3) {
+    if (movingHeads["MH1"]) {
+      if (channel === 1) {
+        console.log(`🔄 Mise à jour de MH1 pan avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de pan
+        movingHeads["MH1"].updateDMX({ axis: "pan", value });
+      }
+      if (channel === 2) {
+        console.log(`🔄 Mise à jour de MH1 tilt avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de tilt
+        movingHeads["MH1"].updateDMX({ axis: "tilt", value });
+      }
+      if (channel === 3) {
+        console.log(`🔄 Mise à jour de MH1 flash avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de flash
+        movingHeads["MH1"].updateDMX({ axis: "flash", value });
+      }
+    } else {
+      console.error("MH1 not found in movingHeads"); // DEBUG: Vérifier si MH1 est trouvé
+    }
+  } else if (channel === 4 || channel === 5 || channel === 6) {
+    if (movingHeads["MH2"]) {
+      if (channel === 4) {
+        console.log(`🔄 Mise à jour de MH2 pan avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de pan
+        movingHeads["MH2"].updateDMX({ axis: "pan", value });
+      }
+      if (channel === 5) {
+        console.log(`🔄 Mise à jour de MH2 tilt avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de tilt
+        movingHeads["MH2"].updateDMX({ axis: "tilt", value });
+      }
+      if (channel === 6) {
+        console.log(`🔄 Mise à jour de MH2 flash avec la valeur ${value}`); // DEBUG: Afficher la mise à jour de flash
+        movingHeads["MH2"].updateDMX({ axis: "flash", value });
+      }
+    } else {
+      console.error("MH2 not found in movingHeads"); // DEBUG: Vérifier si MH2 est trouvé
+    }
+  }
+};
 
 function animate() {
   requestAnimationFrame(animate);

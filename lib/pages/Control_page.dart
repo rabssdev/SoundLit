@@ -93,7 +93,7 @@ class ControllerModel extends ChangeNotifier {
 
   void _sendDMXValues() {
     try {
-      if (_channel != null && _channel!.sink != null) {
+      if (_channel != null) {
         Map<String, int> delta = {};
         for (int i = 0; i < channels.length; i++) {
           if (channels[i] != previousChannels[i]) {
@@ -158,7 +158,7 @@ class _SliderScreenState extends State<SliderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu

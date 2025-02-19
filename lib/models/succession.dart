@@ -1,3 +1,7 @@
+import 'succession_statu.dart';
+import 'statu.dart';
+import '../database/db_helper.dart';
+
 class Succession {
   int? id;
   String name;
@@ -24,5 +28,24 @@ class Succession {
       statusOrder:
           (map['status_order'] as String).split(',').map(int.parse).toList(),
     );
+  }
+
+  Future<void> duplicateStatusToSuccession(
+      List<Statu> statusList, int successionId) async {
+    final dbHelper = DBHelper();
+    for (var statu in statusList) {
+      final successionStatu = SuccessionStatu(
+        successionId: successionId,
+        channels: statu.channels,
+        delayAfter: statu.delayAfter,
+      );
+      final insertedId = await dbHelper.insertSuccessionStatu(successionStatu);
+      print(
+          "Inserted SuccessionStatu ID: $insertedId"); // Debugging information
+    }
+    // Verify the inserted SuccessionStatu entries
+    final insertedStatus = await dbHelper.getSuccessionStatus(successionId);
+    print(
+        "Inserted SuccessionStatu entries: $insertedStatus"); // Debugging information
   }
 }

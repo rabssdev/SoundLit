@@ -84,7 +84,7 @@ class _ModelsScreenState extends State<ModelsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _printModelsJson,
         tooltip: 'Afficher JSON des modèles', // Appel de la fonction pour afficher le JSON
-        child: Icon(Icons.print),
+        child: const Icon(Icons.print),
       ),
     );
   }

@@ -18,7 +18,7 @@ class WelcomePage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Cercles avec Activation'),
         ),
-        body: CircleScroller(totalCircles: 10,visibleCircles: 5,circleDiameter: 20),
+        body: const CircleScroller(totalCircles: 10,visibleCircles: 5,circleDiameter: 20),
       ),
     );
   }
@@ -139,7 +139,7 @@ class _CircleScrollerState extends State<CircleScroller> {
             return GestureDetector(
               onTap: () => activateCircle(index),
               child: Container(
-                margin: EdgeInsets.symmetric(horizontal: circleSpacing / 2),
+                margin: const EdgeInsets.symmetric(horizontal: circleSpacing / 2),
                 width: widget.circleDiameter,
                 height: widget.circleDiameter,
                 decoration: BoxDecoration(
@@ -237,7 +237,7 @@ class _ModelListPageState extends State<ModelListPage> {
           _fetchModels();
         },
         tooltip: 'Rafraîchir la liste',
-        child: Icon(Icons.refresh),
+        child: const Icon(Icons.refresh),
       ),
     );
   }

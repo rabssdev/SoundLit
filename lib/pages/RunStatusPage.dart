@@ -6,6 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../database/db_helper.dart'; // Votre helper pour la base de données
 import '../models/statu.dart'; // Le modèle de votre entité Statu
 import '../models/succession.dart'; // Le modèle de votre entité Succession
+import '../models/succession_statu.dart'; // Le modèle de votre entité SuccessionStatu
 
 class RunStatusPage extends StatefulWidget {
   final String wsUrl = "ws://192.168.1.112:3000"; // Ensure this URL is correct
@@ -17,11 +18,13 @@ class RunStatusPage extends StatefulWidget {
 }
 
 class _RunStatusPageState extends State<RunStatusPage> {
+  List<Succession> successions = [];
   List<Map<String, dynamic>> statusList = [];
   bool isRunning = false;
   int currentStatusIndex = 0;
   Timer? statusTimer;
   WebSocketChannel? _channel;
+  List<int> channels = List.generate(512, (_) => 0);
   List<int> previousChannels = List.generate(512, (_) => 0);
 
   @override
@@ -32,19 +35,38 @@ class _RunStatusPageState extends State<RunStatusPage> {
   }
 
   void _connectWebSocket() {
-    _channel = IOWebSocketChannel.connect(widget.wsUrl);
-    _channel!.stream.listen(
-      (data) {
-        print("📥 Données reçues du serveur : $data");
-      },
-      onError: (error) {
-        print("Erreur WebSocket : $error");
-      },
-      onDone: () {
-        print("Connexion WebSocket fermée");
-      },
-    );
-    print("🔗 Connecté au serveur WebSocket");
+    try {
+      _channel = IOWebSocketChannel.connect(widget.wsUrl);
+      _channel!.stream.listen(
+        (data) {
+          try {
+            Map<String, dynamic> receivedData = jsonDecode(data);
+            if (receivedData.containsKey('fullState')) {
+              channels = List<int>.from(receivedData['fullState']);
+              print("📥 État complet reçu : $channels");
+            } else if (receivedData.containsKey('changes')) {
+              receivedData['changes'].forEach((key, value) {
+                int index = int.parse(key);
+                channels[index] = value;
+              });
+              print("📥 Changements reçus : ${receivedData['changes']}");
+            }
+            setState(() {});
+          } catch (e) {
+            print("Erreur lors de la réception des données WebSocket: $e");
+          }
+        },
+        onError: (error) {
+          print("Erreur WebSocket : $error");
+        },
+        onDone: () {
+          print("Connexion WebSocket fermée");
+        },
+      );
+      print("🔗 Connecté au serveur WebSocket");
+    } catch (e) {
+      print("Erreur de connexion WebSocket : $e");
+    }
   }
 
   @override
@@ -69,10 +91,74 @@ class _RunStatusPageState extends State<RunStatusPage> {
     });
   }
 
+  /// Supprime une succession de la base de données
+  Future<void> _deleteSuccession(int id) async {
+    final dbHelper = DBHelper();
+    await dbHelper.deleteSuccession(id);
+    await dbHelper.deleteSuccessionStatus(id);
+    _loadSuccessionsFromDatabase();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Succession supprimée avec succès')),
+    );
+  }
+
+  /// Dialogue pour saisir le nom de la succession
+  Future<String?> _showNameInputDialog(BuildContext context) async {
+    TextEditingController controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Nommer la succession"),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: "Nom"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Annuler"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(controller.text);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Enregistre la succession des statuts dans la base de données
+  Future<void> _saveSuccession() async {
+    final name = await _showNameInputDialog(context);
+    if (name != null && name.isNotEmpty) {
+      final dbHelper = DBHelper();
+      final List<Statu> statusList = await dbHelper.getAllStatus();
+      final succession = Succession(
+        name: name,
+        statusOrder: statusList.map((status) => status.statuId!).toList(),
+      );
+      final successionId = await dbHelper.insertSuccession(succession);
+      print("Succession ID: $successionId"); // Debugging information
+      await succession.duplicateStatusToSuccession(statusList, successionId);
+      // Verify the inserted SuccessionStatu entries
+      final insertedStatus = await dbHelper.getSuccessionStatus(successionId);
+      print(
+          "Inserted SuccessionStatu entries: $insertedStatus"); // Debugging information
+      _loadSuccessionsFromDatabase();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Succession enregistrée avec succès')),
+      );
+    }
+  }
+
   /// Envoie des valeurs DMX au serveur via WebSocket
   void _sendDMXValues(List<int> channels) {
     try {
-      if (_channel != null && _channel!.sink != null) {
+      if (_channel != null) {
         Map<String, int> delta = {};
         for (int i = 0; i < channels.length; i++) {
           if (channels[i] != previousChannels[i]) {
@@ -176,50 +262,19 @@ class _RunStatusPageState extends State<RunStatusPage> {
     );
   }
 
-  /// Dialogue pour saisir le nom de la succession
-  Future<String?> _showNameInputDialog(BuildContext context) async {
-    TextEditingController controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Nommer la succession"),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(labelText: "Nom"),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Annuler"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(controller.text);
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  
 
-  /// Enregistre la succession des statuts dans la base de données
-  Future<void> _saveSuccession() async {
-    final name = await _showNameInputDialog(context);
-    if (name != null && name.isNotEmpty) {
-      final dbHelper = DBHelper();
-      final succession = Succession(
-        name: name,
-        statusOrder: statusList.map((status) => status['id'] as int).toList(),
-      );
-      await dbHelper.insertSuccession(succession);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Succession enregistrée avec succès')),
-      );
-    }
+
+  /// Charge les successions depuis la base de données
+  Future<void> _loadSuccessionsFromDatabase() async {
+    final dbHelper = DBHelper();
+    final List<Succession> fetchedSuccessions =
+        await dbHelper.getAllSuccessions();
+    setState(() {
+      successions = fetchedSuccessions;
+    });
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -270,6 +325,9 @@ class _RunStatusPageState extends State<RunStatusPage> {
                               }
                             },
                           ),
+                          onTap: () {
+                            _sendDMXValues(statusList[index]['channels']);
+                          },
                         );
                       },
                     ),

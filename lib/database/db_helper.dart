@@ -6,6 +6,7 @@ import '../models/tools.dart';
 import '../models/model.dart';
 import '../models/used_light.dart';
 import '../models/succession.dart';
+import '../models/succession_statu.dart';
 
 class DBHelper {
   static final DBHelper _instance = DBHelper._internal();
@@ -77,6 +78,15 @@ class DBHelper {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             status_order TEXT NOT NULL
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE SuccessionStatu (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            succession_id INTEGER NOT NULL,
+            channels TEXT NOT NULL,
+            delay_after INTEGER NOT NULL,
+            FOREIGN KEY (succession_id) REFERENCES Succession(id)
           )
         ''');
       },
@@ -335,7 +345,9 @@ class DBHelper {
 
   Future<int> insertSuccession(Succession succession) async {
     final db = await database;
-    return await db.insert('Succession', succession.toMap());
+    final id = await db.insert('Succession', succession.toMap());
+    print("Inserted Succession with ID: $id"); // Debugging information
+    return id;
   }
 
   Future<List<Succession>> getAllSuccessions() async {
@@ -377,5 +389,42 @@ class DBHelper {
     }
 
     return Succession.fromMap(result.first);
+  }
+
+  // CRUD for SuccessionStatu
+  Future<int> insertSuccessionStatu(SuccessionStatu successionStatu) async {
+    final db = await database;
+    final id = await db.insert('SuccessionStatu', successionStatu.toMap());
+    print("Inserted SuccessionStatu with ID: $id"); // Debugging information
+    return id;
+  }
+
+  Future<List<SuccessionStatu>> getSuccessionStatus(int successionId) async {
+    final db = await database;
+    final maps = await db.query(
+      'SuccessionStatu',
+      where: 'succession_id = ?',
+      whereArgs: [successionId],
+    );
+    print("Retrieved SuccessionStatu entries: $maps"); // Debugging information
+    return maps.map((map) => SuccessionStatu.fromMap(map)).toList();
+  }
+
+  Future<int> deleteSuccessionStatu(int id) async {
+    final db = await database;
+    return await db.delete(
+      'SuccessionStatu',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteSuccessionStatus(int successionId) async {
+    final db = await database;
+    return await db.delete(
+      'SuccessionStatu',
+      where: 'succession_id = ?',
+      whereArgs: [successionId],
+    );
   }
 }
