@@ -2,6 +2,7 @@ import 'dart:async'; // Import Timer class
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart'; // Import path package
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../database/db_helper.dart';
@@ -27,6 +28,7 @@ class _MusicPageState extends State<MusicPage> {
   int beatsPerChange = 2; // Change every two beats
   Timer? statusTimer;
   int currentStatusIndex = 0;
+  String? currentFileName; // Add this line
 
   @override
   void initState() {
@@ -40,8 +42,10 @@ class _MusicPageState extends State<MusicPage> {
     _channel!.stream.listen(
       (data) {
         final response = jsonDecode(data);
-        if (response['tempo'] != null) {
-          _saveMusicTempo(response['tempo']);
+        if (response['tempo'] != null && currentFileName != null) {
+          _saveMusicTempo(response['tempo'],
+              response['title'] ?? 'Unknown Title', currentFileName!);
+          currentFileName = null; // Reset after saving
         }
       },
       onError: (error) {
@@ -69,11 +73,13 @@ class _MusicPageState extends State<MusicPage> {
     });
   }
 
-  Future<void> _saveMusicTempo(String tempo) async {
+  Future<void> _saveMusicTempo(
+      String tempo, String title, String fileName) async {
     final dbHelper = DBHelper();
     final music = Music(
-      title: "New Music",
+      title: title,
       tempo: tempo,
+      fileName: fileName,
     );
     await dbHelper.insertMusic(music);
     _loadMusicFromDatabase();
@@ -85,10 +91,17 @@ class _MusicPageState extends State<MusicPage> {
     _loadMusicFromDatabase();
   }
 
-  void _analyzeMusic(File file) {
+  String _getMusicTitle(File file) {
+    return basename(file.path);
+  }
+
+  void _analyzeMusic(File file) async {
     final bytes = file.readAsBytesSync();
     final base64File = base64Encode(bytes);
-    _channel!.sink.add(jsonEncode({'file': base64File}));
+    final title = _getMusicTitle(file);
+    currentFileName = basename(file.path); // Store the file name
+    _channel!.sink.add(jsonEncode(
+        {'file': base64File, 'title': title, 'fileName': currentFileName}));
   }
 
   void _playMusic(Music music) {
@@ -170,11 +183,81 @@ class _MusicPageState extends State<MusicPage> {
               itemBuilder: (context, index) {
                 final music = musicList[index];
                 return ListTile(
-                  title: Text(music.title),
-                  subtitle: Text("Tempo: ${music.tempo} BPM"),
+                  title: Text(music.fileName,style:const TextStyle(color:Colors.white)),
+                  subtitle: Text("Tempo: ${music.tempo} BPM",style:const TextStyle(color:Colors.white)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 2;
+                        }),
+                        child: const Text("2"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 2 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 3;
+                        }),
+                        child: const Text("3"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 3 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 4;
+                        }),
+                        child: const Text("4"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 4 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 6;
+                        }),
+                        child: const Text("6"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 6 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 8;
+                        }),
+                        child: const Text("8"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 8 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 9;
+                        }),
+                        child: const Text("9"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 9 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          beatsPerChange = 12;
+                        }),
+                        child: const Text("12"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              beatsPerChange == 12 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
                       ElevatedButton(
                         onPressed: () => isPlaying && playingMusicId == music.id
                             ? _stopMusic()

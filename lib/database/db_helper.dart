@@ -94,7 +94,8 @@ class DBHelper {
           CREATE TABLE Music (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
-            tempo TEXT NOT NULL
+            tempo TEXT NOT NULL,
+            fileName TEXT NOT NULL
           )
         ''');
       },
@@ -446,6 +447,16 @@ class DBHelper {
     final db = await database;
     final result = await db.query('Music');
     return result.map((map) => Music.fromMap(map)).toList();
+  }
+
+  Future<int> updateMusic(Music music) async {
+    final db = await database;
+    return await db.update(
+      'Music',
+      music.toMap(),
+      where: 'id = ?',
+      whereArgs: [music.id],
+    );
   }
 
   Future<int> deleteMusic(int id) async {
