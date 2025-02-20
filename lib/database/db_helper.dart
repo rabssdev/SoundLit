@@ -7,6 +7,7 @@ import '../models/model.dart';
 import '../models/used_light.dart';
 import '../models/succession.dart';
 import '../models/succession_statu.dart';
+import '../models/music.dart';
 
 class DBHelper {
   static final DBHelper _instance = DBHelper._internal();
@@ -87,6 +88,13 @@ class DBHelper {
             channels TEXT NOT NULL,
             delay_after INTEGER NOT NULL,
             FOREIGN KEY (succession_id) REFERENCES Succession(id)
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE Music (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            tempo TEXT NOT NULL
           )
         ''');
       },
@@ -425,6 +433,27 @@ class DBHelper {
       'SuccessionStatu',
       where: 'succession_id = ?',
       whereArgs: [successionId],
+    );
+  }
+
+  // CRUD Operations for Music
+  Future<int> insertMusic(Music music) async {
+    final db = await database;
+    return await db.insert('Music', music.toMap());
+  }
+
+  Future<List<Music>> getAllMusic() async {
+    final db = await database;
+    final result = await db.query('Music');
+    return result.map((map) => Music.fromMap(map)).toList();
+  }
+
+  Future<int> deleteMusic(int id) async {
+    final db = await database;
+    return await db.delete(
+      'Music',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 }

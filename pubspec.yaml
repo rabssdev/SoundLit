@@ -40,6 +40,7 @@ dependencies:
   flex_color_picker: ^3.6.0
   flutter_circle_color_picker: ^0.3.0
   web_socket_channel: ^3.0.1
+  file_picker: ^5.0.0
 
 flutter_launcher_icons:
   android: "launcher_icon"
