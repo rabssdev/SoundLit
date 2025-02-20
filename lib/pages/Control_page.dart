@@ -162,8 +162,8 @@ class _SliderScreenState extends State<SliderScreen> {
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu
-          child: HorizontalStatuManager(),
-          // child: ChannelValuesWidget(),
+          // child: HorizontalStatuManager(),
+          child: ChannelValuesWidget(),
         ),
         Expanded(
           child: Row(
@@ -636,13 +636,13 @@ class _ControlerWidgetState extends State<ControlerWidget> {
               if (channels.length >= 3) {
                 context
                     .read<ControllerModel>()
-                    .updateChannelValue(channels[0] - 1, red);
+                    .updateChannelValue(channels[0], red);
                 context
                     .read<ControllerModel>()
-                    .updateChannelValue(channels[1] - 1, green);
+                    .updateChannelValue(channels[1], green);
                 context
                     .read<ControllerModel>()
-                    .updateChannelValue(channels[2] - 1, blue);
+                    .updateChannelValue(channels[2], blue);
               }
             }
           });
@@ -657,7 +657,7 @@ class _ControlerWidgetState extends State<ControlerWidget> {
     // Calculer la valeur moyenne initiale des canaux
     double initialValue = channelGroups
             .expand(
-                (channels) => channels.map((ch) => controller.channels[ch - 1]))
+                (channels) => channels.map((ch) => controller.channels[ch]))
             .reduce((a, b) => a + b)
             .toDouble() /
         (channelGroups.expand((e) => e).length); // Diviser par le total réel
@@ -676,7 +676,7 @@ class _ControlerWidgetState extends State<ControlerWidget> {
                 for (var ch in channels) {
                   context
                       .read<ControllerModel>()
-                      .updateChannelValue(ch - 1, newValue.toInt());
+                      .updateChannelValue(ch, newValue.toInt());
                 }
               }
             });
