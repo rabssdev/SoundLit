@@ -42,6 +42,8 @@ dependencies:
   web_socket_channel: ^3.0.1
   file_picker: ^5.0.0
   metadata_god: ^1.0.0
+  audioplayers: ^5.2.0
+  flutter_sound: ^9.23.1
 
 flutter_launcher_icons:
   android: "launcher_icon"
