@@ -19,7 +19,7 @@ import 'pages/Show_used_light.dart';
 import 'pages/RunStatusPage.dart';
 import 'pages/RunSuccessionPage.dart';
 import 'pages/MusicPage.dart'; // Import the new page
-import 'pages/AudioAnalyzerPage.dart'; // Import the new page
+import 'pages/audioanalyzer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const UsedLightsPage(),
     const RunStatusPage(),
     const MusicPage(), // Add the new page
-    const AudioAnalyzerPage(), // Add the new page
+    AudioAnalyzerPage(), // Add the new page
   ];
 
   // Méthode de changement de page
@@ -181,8 +181,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () => _onItemTapped(13),
             ),
             ListTile(
-              leading: const Icon(Icons.music_note),
-              title: const Text('Audio Analyzer Page'), // Add the new menu item
+              leading: const Icon(Icons.analytics),
+              title: const Text('Audio Analyzer'), // Add the new menu item
               onTap: () => _onItemTapped(14),
             ),
           ],
