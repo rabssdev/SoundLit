@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:fftea/fftea.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 class Point {
   final double x;
@@ -10,26 +13,28 @@ class Point {
   Point(this.x, this.y);
 }
 
-List<Point> analyzeFrequency(
-    String filePath, double frequencyStart, double frequencyEnd) {
-  // Read the audio file and perform frequency analysis
+Future<List<Point>> analyzeFrequency(String filePath) async {
   List<Point> points = [];
   final audioData = _readAudioFile(filePath);
   final sampleRate = 44100; // Assuming a sample rate of 44100 Hz
+  final fft = FFT(1024); // Use a segment size of 1024, which is a power of two
 
-  for (int i = 0; i < audioData.length; i += sampleRate) {
-    final segment = audioData.sublist(i, min(i + sampleRate, audioData.length));
-    final dbValues =
-        _calculateDbRange(segment, frequencyStart, frequencyEnd, sampleRate);
-    final peakDbValue = dbValues.reduce(max);
+  for (int i = 0; i < audioData.length; i += 1024) {
+    final segment = _getSegment(audioData, i, 1024);
+    final dbValue = _calculateDb(segment, sampleRate, fft);
     final timeInSeconds = i / sampleRate;
-    final point = Point(timeInSeconds, peakDbValue);
+    final point = Point(timeInSeconds, dbValue);
     points.add(point);
-    print('Point obtained: x=${point.x}, y=${point.y}');
   }
 
-  print('Analysis complete. Total points: ${points.length}');
   return points;
+}
+
+Future<double> getAudioDuration(String filePath) async {
+  final audioPlayer = AudioPlayer();
+  await audioPlayer.setSourceDeviceFile(filePath);
+  final duration = await audioPlayer.getDuration();
+  return duration?.inSeconds.toDouble() ?? 0.0;
 }
 
 Uint8List _readAudioFile(String filePath) {
@@ -37,28 +42,30 @@ Uint8List _readAudioFile(String filePath) {
   return file.readAsBytesSync();
 }
 
-List<double> _calculateDbRange(List<int> segment, double frequencyStart,
-    double frequencyEnd, int sampleRate) {
+List<double> _getSegment(Uint8List audioData, int start, int length) {
+  final segment = List<double>.filled(length, 0.0);
+  for (int i = 0; i < length && start + i < audioData.length; i++) {
+    segment[i] = audioData[start + i].toDouble();
+  }
+  return segment;
+}
+
+double _calculateDb(List<double> segment, int sampleRate, FFT fft) {
   final n = segment.length;
-  final real = List<double>.filled(n, 0.0);
-  final imag = List<double>.filled(n, 0.0);
-  final dbValues = <double>[];
+  final windowedSegment = _applyHannWindow(segment);
+  final spectrum = fft.realFft(windowedSegment);
+  final magnitude = spectrum.map((c) => c.abs().x).reduce(max);
 
-  for (double frequency = frequencyStart;
-      frequency <= frequencyEnd;
-      frequency += 1.0) {
-    for (int i = 0; i < n; i++) {
-      real[i] = segment[i] * cos(2 * pi * frequency * i / sampleRate);
-      imag[i] = -segment[i] * sin(2 * pi * frequency * i / sampleRate);
-    }
+  return 20 * log(magnitude) / ln10;
+}
 
-    final magnitude = sqrt(
-        real.reduce((a, b) => a + b) * real.reduce((a, b) => a + b) +
-            imag.reduce((a, b) => a + b) * imag.reduce((a, b) => a + b));
+List<double> _applyHannWindow(List<double> segment) {
+  final n = segment.length;
+  final windowedSegment = List<double>.filled(n, 0.0);
 
-    final dbValue = 20 * log(magnitude) / ln10;
-    dbValues.add(dbValue);
+  for (int i = 0; i < n; i++) {
+    windowedSegment[i] = segment[i] * 0.5 * (1 - cos(2 * pi * i / (n - 1)));
   }
 
-  return dbValues;
+  return windowedSegment;
 }
