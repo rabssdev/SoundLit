@@ -27,7 +27,8 @@ class _AudioAnalyzerPageState extends State<AudioAnalyzerPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GraphPage(points: points),
+        builder: (context) => GraphPage(
+            points: points, audioFilePath: filePath), // Pass the audioFilePath
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:fftea/fftea.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 class Point {
   final double x;

@@ -20,6 +20,7 @@ import 'pages/RunStatusPage.dart';
 import 'pages/RunSuccessionPage.dart';
 import 'pages/MusicPage.dart'; // Import the new page
 import 'pages/audioanalyzer.dart';
+import 'pages/recorder.dart'; // Import the new page
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const RunStatusPage(),
     const MusicPage(), // Add the new page
     AudioAnalyzerPage(), // Add the new page
+    const RecorderPage(), // Add the new page
   ];
 
   // Méthode de changement de page
@@ -185,6 +187,12 @@ class _MyHomePageState extends State<MyHomePage> {
               title: const Text('Audio Analyzer'), // Add the new menu item
               onTap: () => _onItemTapped(14),
             ),
+            ListTile(
+              leading: const Icon(Icons.mic),
+              title: const Text('Recorder'), // Add the new menu item
+              onTap: () => _onItemTapped(15),
+            )
+            
           ],
         ),
       ),

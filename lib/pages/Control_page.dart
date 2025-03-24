@@ -162,8 +162,8 @@ class _SliderScreenState extends State<SliderScreen> {
       children: [
         SizedBox(
           height: 120, // Fixe une hauteur pour le contenu
-          // child: HorizontalStatuManager(),
-          child: ChannelValuesWidget(),
+          child: HorizontalStatuManager(),
+          // child: ChannelValuesWidget(),
         ),
         Expanded(
           child: Row(
@@ -394,6 +394,12 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
       Colors.purple.shade100,
       Colors.red.shade100,
       Colors.yellow.shade100,
+      const Color.fromARGB(255, 11, 53, 87),
+      const Color.fromARGB(255, 29, 236, 36),
+      const Color.fromARGB(255, 226, 151, 38),
+      const Color.fromARGB(255, 202, 102, 219),
+      const Color.fromARGB(255, 235, 125, 136),
+      const Color.fromARGB(255, 243, 232, 129),
     ];
 
     int colorIndex = 0;
@@ -487,7 +493,7 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Used Light ID: ${light.usedLightId}',
+                    'ID: ${light.usedLightId}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text('Model ID: $modelId'),
@@ -656,8 +662,7 @@ class _ControlerWidgetState extends State<ControlerWidget> {
       ControllerModel controller, List<List<int>> channelGroups) {
     // Calculer la valeur moyenne initiale des canaux
     double initialValue = channelGroups
-            .expand(
-                (channels) => channels.map((ch) => controller.channels[ch]))
+            .expand((channels) => channels.map((ch) => controller.channels[ch]))
             .reduce((a, b) => a + b)
             .toDouble() /
         (channelGroups.expand((e) => e).length); // Diviser par le total réel
