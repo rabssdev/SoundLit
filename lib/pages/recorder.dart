@@ -124,69 +124,79 @@ class _RecorderPageState extends State<RecorderPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recorder'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: _toggleRecording,
-              child: Text(_isRecording ? 'Stop' : 'Record'),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 300,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: LineChart(
-                  LineChartData(
-                    gridData: FlGridData(show: false),
-                    titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 40,
-                          getTitlesWidget: (value, meta) {
-                            return Text(value.toStringAsFixed(0));
-                          },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A2E), // Dark blue
+              Color(0xFF16213E), // Darker blue
+            ],
+            stops: [0.5, 0.5], // Split the gradient diagonally
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _toggleRecording,
+                child: Text(_isRecording ? 'Stop' : 'Record'),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 300,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(show: false),
+                      titlesData: FlTitlesData(
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            getTitlesWidget: (value, meta) {
+                              return Text(value.toStringAsFixed(0));
+                            },
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: true),
                         ),
                       ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: true),
-                      ),
+                      borderData: FlBorderData(show: false),
+                      minY: 0, // Fixed min value for y-axis
+                      maxY: 400, // Fixed max value for y-axis
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: _frequencyData,
+                          isCurved: true,
+                          color: Colors.purpleAccent,
+                          barWidth: 2,
+                          isStrokeCapRound: true,
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: Colors.purple.withOpacity(0.3),
+                          ),
+                        ),
+                      ],
                     ),
-                    borderData: FlBorderData(show: false),
-                    minY: 0, // Fixed min value for y-axis
-                    maxY: 400, // Fixed max value for y-axis
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: _frequencyData,
-                        isCurved: true,
-                        color: Colors.purpleAccent,
-                        barWidth: 2,
-                        isStrokeCapRound: true,
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: Colors.purple.withOpacity(0.3),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: _filteredFrequencyData.map((spot) {
-                  return Text(
-                      'Frequency: ${spot.x.toStringAsFixed(2)} Hz, Intensity: ${spot.y.toStringAsFixed(2)} dB');
-                }).toList(),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: _filteredFrequencyData.map((spot) {
+                    return Text(
+                        'Frequency: ${spot.x.toStringAsFixed(2)} Hz, Intensity: ${spot.y.toStringAsFixed(2)} dB');
+                  }).toList(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

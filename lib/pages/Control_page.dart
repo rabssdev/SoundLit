@@ -128,8 +128,21 @@ class ControlPage extends StatefulWidget {
 class ControlPageState extends State<ControlPage> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SliderScreen(),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A2E), // Dark blue
+              Color(0xFF16213E), // Darker blue
+            ],
+            stops: [0.5, 0.5], // Split the gradient diagonally
+          ),
+        ),
+        child: const SliderScreen(),
+      ),
     );
   }
 }
@@ -467,8 +480,23 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView.builder(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border.all(
+          color: Colors.lightBlueAccent,
+          width: 3,
+        ),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.lightBlueAccent.withOpacity(0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: ListView.builder(
         itemCount: usedLights.length,
         itemBuilder: (context, index) {
           final light = usedLights[index];
@@ -606,8 +634,23 @@ class _ControlerWidgetState extends State<ControlerWidget> {
       );
     }
 
-    return Scaffold(
-      body: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border.all(
+          color: Colors.lightBlueAccent,
+          width: 3,
+        ),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.lightBlueAccent.withOpacity(0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal, // Défilement horizontal
         child: Row(
           children: tools.asMap().entries.map((entry) {
@@ -687,7 +730,9 @@ class _ControlerWidgetState extends State<ControlerWidget> {
           inactiveTrackColor: Colors.grey.shade800,
           trackHeight: 8,
           thumbColor: Colors.orange,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+          thumbShape: const RoundSliderThumbShape(
+            enabledThumbRadius: 12, // Taille du pouce rond
+          ),
           overlayColor: Colors.orange.withOpacity(0.3),
           overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
           valueIndicatorColor: Colors.orangeAccent,

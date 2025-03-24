@@ -15,10 +15,24 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Cercles avec Activation'),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A1A2E), // Dark blue
+                Color(0xFF16213E), // Darker blue
+              ],
+              stops: [0.5, 0.5], // Split the gradient diagonally
+            ),
+          ),
+          child: const CircleScroller(
+            totalCircles: 10,
+            visibleCircles: 5,
+            circleDiameter: 20,
+          ),
         ),
-        body: const CircleScroller(totalCircles: 10,visibleCircles: 5,circleDiameter: 20),
       ),
     );
   }
@@ -79,7 +93,8 @@ class CircleScroller extends StatefulWidget {
   final int visibleCircles;
   final double circleDiameter;
 
-  const CircleScroller({super.key, 
+  const CircleScroller({
+    super.key,
     required this.totalCircles,
     required this.visibleCircles,
     required this.circleDiameter,
@@ -139,7 +154,8 @@ class _CircleScrollerState extends State<CircleScroller> {
             return GestureDetector(
               onTap: () => activateCircle(index),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: circleSpacing / 2),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: circleSpacing / 2),
                 width: widget.circleDiameter,
                 height: widget.circleDiameter,
                 decoration: BoxDecoration(
@@ -243,17 +259,6 @@ class _ModelListPageState extends State<ModelListPage> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 class StatuListPage extends StatefulWidget {
   const StatuListPage({super.key});
 
@@ -347,13 +352,15 @@ class _StatuListPageState extends State<StatuListPage> {
                           scrollDirection: Axis.horizontal,
                           child: Text(
                             statu.channels.join(", "),
-                            style: const TextStyle(fontSize: 14, color: Colors.black),
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.black),
                           ),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => _updateStatuChannels(statu),
-                          child: const Text("Mettre à jour avec les valeurs actuelles"),
+                          child: const Text(
+                              "Mettre à jour avec les valeurs actuelles"),
                         ),
                       ],
                     ),
