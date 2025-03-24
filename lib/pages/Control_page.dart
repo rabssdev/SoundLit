@@ -476,29 +476,41 @@ class _UsedLightListScreenState extends State<UsedLightListScreen> {
           final color = modelColors[modelId] ?? Colors.grey.shade200;
           final isSelected = selectedUsedLightIds.contains(light.usedLightId);
 
+          // Find the model name for the current UsedLight
+          final modelName = models
+              .firstWhere(
+                (model) => model.modelId == modelId,
+                orElse: () =>
+                    Model(modelId: 0, ref: 'Unknown', chNumber: 0, chTool: []),
+              )
+              .ref;
+
           return GestureDetector(
             onTap: () => _toggleSelection(light),
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.transparent : color,
-                border: Border.all(
-                  color: isSelected ? Colors.black : Colors.transparent,
-                  width: isSelected ? 2 : 0,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'ID: ${light.usedLightId}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: isSelected ? Colors.black : color,
+                    child: Text(
+                      '${light.usedLightId}',
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  Text('Model ID: $modelId'),
-                  Text('Activated: ${light.activated ? "Yes" : "No"}'),
-                  Text('Channels: ${light.channels.join(", ")}'),
+                  const SizedBox(height: 8),
+                  Text(
+                    modelName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -669,24 +681,40 @@ class _ControlerWidgetState extends State<ControlerWidget> {
 
     return RotatedBox(
       quarterTurns: 3, // Oriente le slider verticalement
-      child: Slider(
-        value: initialValue.clamp(0, 255), // S'assurer que la valeur est valide
-        min: 0,
-        max: 255, // Plage de 0 à 255
-        onChanged: (newValue) {
-          setState(() {
-            // Utiliser throttle pour limiter les mises à jour
-            _throttle(() {
-              for (var channels in channelGroups) {
-                for (var ch in channels) {
-                  context
-                      .read<ControllerModel>()
-                      .updateChannelValue(ch, newValue.toInt());
+      child: SliderTheme(
+        data: SliderThemeData(
+          activeTrackColor: Colors.yellowAccent,
+          inactiveTrackColor: Colors.grey.shade800,
+          trackHeight: 8,
+          thumbColor: Colors.orange,
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+          overlayColor: Colors.orange.withOpacity(0.3),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+          valueIndicatorColor: Colors.orangeAccent,
+          valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+        ),
+        child: Slider(
+          value:
+              initialValue.clamp(0, 255), // S'assurer que la valeur est valide
+          min: 0,
+          max: 255, // Plage de 0 à 255
+          divisions: 255, // Ajouter des divisions pour un contrôle plus fin
+          label: '${initialValue.toInt()}', // Afficher la valeur actuelle
+          onChanged: (newValue) {
+            setState(() {
+              // Utiliser throttle pour limiter les mises à jour
+              _throttle(() {
+                for (var channels in channelGroups) {
+                  for (var ch in channels) {
+                    context
+                        .read<ControllerModel>()
+                        .updateChannelValue(ch, newValue.toInt());
+                  }
                 }
-              }
+              });
             });
-          });
-        },
+          },
+        ),
       ),
     );
   }
