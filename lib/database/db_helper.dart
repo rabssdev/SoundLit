@@ -1,5 +1,6 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart';
 import '../models/light.dart';
 import '../models/statu.dart';
 import '../models/tools.dart';
@@ -333,12 +334,18 @@ class DBHelper {
 
   Future<int> updateUsedLight(UsedLight usedLight) async {
     final db = await database;
-    return await db.update(
+    final result = await db.update(
       'UsedLight',
       usedLight.toMap(),
       where: 'used_light_id = ?',
       whereArgs: [usedLight.usedLightId],
     );
+
+    // Message de débogage
+    debugPrint(
+        "Database updated for UsedLight ID=${usedLight.usedLightId}, Channels=${usedLight.channels}");
+
+    return result;
   }
 
   Future<int> deleteUsedLight(int usedLightId) async {
@@ -348,6 +355,30 @@ class DBHelper {
       where: 'used_light_id = ?',
       whereArgs: [usedLightId],
     );
+  }
+
+  Future<void> resetUsedLightIds(List<UsedLight> usedLights) async {
+    final db = await database;
+
+    // Désactiver temporairement l'auto-incrémentation
+    await db.execute("DELETE FROM sqlite_sequence WHERE name='UsedLight'");
+
+    // Mettre à jour chaque UsedLight avec les nouveaux IDs et channels
+    for (int i = 0; i < usedLights.length; i++) {
+      final updatedUsedLight = usedLights[i].copyWith(usedLightId: i + 1);
+
+      // Mise à jour dans la base de données
+      await db.update(
+        'UsedLight',
+        updatedUsedLight.toMap(),
+        where: 'used_light_id = ?',
+        whereArgs: [usedLights[i].usedLightId],
+      );
+
+      // Message de débogage
+      debugPrint(
+          "Database updated for UsedLight ID=${updatedUsedLight.usedLightId}, Channels=${updatedUsedLight.channels}");
+    }
   }
 
 //******************************CRUD SUCCESSION */

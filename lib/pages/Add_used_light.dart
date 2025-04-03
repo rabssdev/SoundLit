@@ -101,18 +101,34 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
     setState(() {
       usedLights.removeAt(index);
 
-      // Recalculer le canal en cours
-      currentChannel = usedLights.isEmpty
-          ? 1
-          : usedLights.fold<int>(
-              1,
-              (prev, light) =>
-                  prev +
-                  models
-                      .firstWhere((model) => model.modelId == light.modelId)
-                      .chNumber,
-            );
+      // Réattribuer les IDs et recalculer les canaux
+      int currentChannel = 1;
+      for (int i = 0; i < usedLights.length; i++) {
+        var model = models.firstWhereOrNull(
+          (model) => model.modelId == usedLights[i].modelId,
+        );
+
+        if (model != null) {
+          int endChannel = currentChannel + model.chNumber - 1;
+          usedLights[i] = usedLights[i].copyWith(
+            usedLightId: i + 1, // Réattribuer l'ID manuellement
+            channels: List<int>.generate(
+              endChannel - currentChannel + 1,
+              (j) => currentChannel + j,
+            ),
+          );
+
+          // Messages de débogage
+          debugPrint(
+              "Updated UsedLight at index $i: ID=${usedLights[i].usedLightId}, Channels=${usedLights[i].channels}");
+
+          currentChannel = endChannel + 1;
+        }
+      }
     });
+
+    // Réinitialiser les IDs et les channels dans la base de données
+    await dbHelper.resetUsedLightIds(usedLights);
   }
 
   Future<void> saveUsedLights() async {
@@ -173,11 +189,13 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
                           children: [
                             Text(
                               "BEGIN CHANNEL: $beginChannel",
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               "END CHANNEL: $endChannel",
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -213,7 +231,8 @@ class _AddUsedLightPageState extends State<AddUsedLightPage> {
             children: [
               IconButton(
                 onPressed: addUsedLight,
-                icon: const Icon(Icons.add_circle, color: Colors.green, size: 40),
+                icon:
+                    const Icon(Icons.add_circle, color: Colors.green, size: 40),
               ),
             ],
           ),

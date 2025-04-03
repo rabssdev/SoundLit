@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class UsedLight {
   final int? usedLightId;
   final int modelId;
@@ -18,12 +20,18 @@ class UsedLight {
     bool? activated,
     List<int>? channels,
   }) {
-    return UsedLight(
+    final updatedUsedLight = UsedLight(
       usedLightId: usedLightId ?? this.usedLightId,
       modelId: modelId ?? this.modelId,
       activated: activated ?? this.activated,
       channels: channels ?? this.channels,
     );
+
+    // Message de débogage
+    debugPrint(
+        "UsedLight updated: ID=${updatedUsedLight.usedLightId}, ModelID=${updatedUsedLight.modelId}, Channels=${updatedUsedLight.channels}");
+
+    return updatedUsedLight;
   }
 
   // Méthode de sérialisation : Map vers objet
